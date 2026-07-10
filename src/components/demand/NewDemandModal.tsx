@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { PlusCircle, X, Loader2 } from 'lucide-react'
+import { PlusCircle, X, Loader2, Upload, FileText } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 import type { Demand, Priority, QualityGate, AcceptanceCriterion, WorkflowStage } from '@/types'
 
@@ -75,8 +75,11 @@ export function NewDemandModal() {
   const [dueDate, setDueDate] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [toast, setToast] = useState(false)
+  const [fileName, setFileName] = useState('')
+  const [isDragging, setIsDragging] = useState(false)
 
   const firstInputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Foco automático no primeiro campo
   useEffect(() => {
@@ -95,6 +98,35 @@ export function NewDemandModal() {
     return () => window.removeEventListener('keydown', handler)
   }, [isNewDemandOpen, closeNewDemand])
 
+  const readFile = useCallback((file: File) => {
+    if (!file.name.match(/\.(txt|md|markdown)$/i)) return
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const text = e.target?.result as string
+      setDescription(text)
+      setFileName(file.name)
+    }
+    reader.readAsText(file, 'UTF-8')
+  }, [])
+
+  const handleFileDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files[0]
+    if (file) readFile(file)
+  }, [readFile])
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) readFile(file)
+    e.target.value = ''
+  }
+
+  const clearFile = () => {
+    setFileName('')
+    setDescription('')
+  }
+
   const resetForm = () => {
     setTitle('')
     setDescription('')
@@ -103,6 +135,7 @@ export function NewDemandModal() {
     setRepository('')
     setBranch('')
     setDueDate('')
+    setFileName('')
   }
 
   const handleClose = () => {
@@ -229,13 +262,54 @@ export function NewDemandModal() {
                     />
                   </div>
 
-                  {/* Descrição */}
+                  {/* Upload de arquivo */}
                   <div>
-                    <label className={labelClass}>Descrição</label>
+                    <label className={labelClass}>Descrição — arquivo ou texto</label>
+
+                    {/* Drop zone */}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".txt,.md,.markdown"
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
+
+                    {fileName ? (
+                      <div className="flex items-center gap-2 px-3 py-2 bg-[#7c6cf0]/10 border border-[#7c6cf0]/30 rounded-lg text-sm mb-2">
+                        <FileText size={14} className="text-[#7c6cf0] shrink-0" />
+                        <span className="text-white/80 flex-1 truncate">{fileName}</span>
+                        <button
+                          onClick={clearFile}
+                          className="text-white/40 hover:text-white transition-colors"
+                        >
+                          <X size={13} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+                        onDragLeave={() => setIsDragging(false)}
+                        onDrop={handleFileDrop}
+                        className={`w-full flex flex-col items-center gap-1.5 px-4 py-4 rounded-lg border border-dashed transition-all cursor-pointer mb-2 ${
+                          isDragging
+                            ? 'border-[#7c6cf0] bg-[#7c6cf0]/10'
+                            : 'border-border hover:border-[#7c6cf0]/50 hover:bg-white/3'
+                        }`}
+                      >
+                        <Upload size={16} className="text-white/30" />
+                        <span className="text-[11px] text-white/30">
+                          Arraste um <span className="text-white/50">.txt</span> ou <span className="text-white/50">.md</span>, ou <span className="text-[#7c6cf0]/80">clique para selecionar</span>
+                        </span>
+                      </button>
+                    )}
+
                     <textarea
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Descreva o problema, comportamento esperado, contexto"
+                      placeholder="Ou escreva diretamente: problema, comportamento esperado, contexto"
                       rows={4}
                       className={`${inputClass} resize-none`}
                     />
