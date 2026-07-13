@@ -60,7 +60,7 @@ export function Agent3D({ def, instance, stationX, stationZ, label, onClick }: A
   const dotColor          = STATUS_DOT_COLOR[status] ?? '#4b5563'
 
   useEffect(() => {
-    if (status === 'COMPLETED') completedAt.current = null
+    completedAt.current = null  // reset on every status change
   }, [status])
 
   useFrame(({ clock }) => {
@@ -145,7 +145,7 @@ export function Agent3D({ def, instance, stationX, stationZ, label, onClick }: A
         {isBlocked && <pointLight color="#ef4444"     intensity={2.5} distance={3.5} decay={2} position={[0, 3.5 * U, 0]} />}
 
         {/* Agent label */}
-        <Html position={[0, -0.60 * U, 0]} center distanceFactor={8} zIndexRange={[10, 20]}>
+        <Html position={[0, -0.14 * U, 0]} center zIndexRange={[10, 20]}>
           <div style={{
             padding: '2px 8px', borderRadius: 99,
             border: `1px solid ${def.color}55`,
@@ -161,7 +161,7 @@ export function Agent3D({ def, instance, stationX, stationZ, label, onClick }: A
 
         {/* Task bubble (active only) */}
         {isActive && currentTask && (
-          <Html position={[0, 3.6 * U, 0]} center distanceFactor={8} zIndexRange={[30, 40]}>
+          <Html position={[0, 3.6 * U, 0]} center zIndexRange={[30, 40]}>
             <div style={{
               maxWidth: 130, padding: '4px 8px', borderRadius: 8,
               border: `1px solid ${def.color}40`,
@@ -179,7 +179,7 @@ export function Agent3D({ def, instance, stationX, stationZ, label, onClick }: A
 
         {/* Hover tooltip */}
         {hovered && (
-          <Html position={[0.9 * U, 1.5 * U, 0]} distanceFactor={8} zIndexRange={[50, 60]}>
+          <Html position={[0.9 * U, 1.5 * U, 0]} zIndexRange={[50, 60]}>
             <div style={{
               padding: '8px 12px', borderRadius: 10,
               border: `1px solid ${def.color}35`,
