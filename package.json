@@ -11,6 +11,8 @@
     "dev:all": "concurrently -n frontend,server -c cyan,magenta \"npm run dev\" \"cd server && npm run dev\""
   },
   "dependencies": {
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
     "framer-motion": "^11.0.0",
@@ -19,11 +21,13 @@
     "react-dom": "^18.3.0",
     "socket.io-client": "^4.7.5",
     "tailwind-merge": "^2.3.0",
+    "three": "^0.185.1",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
+    "@types/three": "^0.185.1",
     "@vitejs/plugin-react": "^4.3.0",
     "autoprefixer": "^10.4.19",
     "concurrently": "^8.2.2",

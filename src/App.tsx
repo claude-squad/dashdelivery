@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { TopBar } from '@/components/layout/TopBar'
 import { PipelineSteps } from '@/components/pipeline/PipelineSteps'
-import { AgentOffice } from '@/components/office/AgentOffice'
+import { AgentOffice3D } from '@/components/office/AgentOffice3D'
 import { AgentList } from '@/components/agents/AgentList'
 import { ActivityStream } from '@/components/activity/ActivityStream'
 import { MetricsBar } from '@/components/metrics/MetricsBar'
@@ -81,7 +81,7 @@ export default function App() {
                     <AgentList />
                   </div>
 
-                  <AgentOffice />
+                  <AgentOffice3D />
 
                   <div className="bg-surface-2 border border-border rounded-xl p-3 flex flex-col gap-2">
                     <div className="text-[10px] font-bold tracking-widest text-white/30 uppercase">
