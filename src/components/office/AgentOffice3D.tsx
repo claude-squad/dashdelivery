@@ -1,7 +1,9 @@
-import { Suspense } from 'react'
+import { Suspense, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
+import { OrbitControls } from '@react-three/drei'
 import { useStore } from '@/store/useStore'
-import { Agent3D } from './Agent3D'
+import { ClawAgent } from './ClawAgent'
+import { OfficeRoom } from './OfficeRoom'
 import { STATIONS_3D } from './sceneConstants'
 import { AgentOffice } from './AgentOffice'
 
@@ -12,37 +14,28 @@ const webGLAvailable = (() => {
   } catch { return false }
 })()
 
-function SceneLights() {
+function SceneLighting() {
   return (
     <>
-      <ambientLight color="#1a2040" intensity={0.9} />
+      {/* Ambient — warm office tone */}
+      <ambientLight color="#c8a870" intensity={0.55} />
+      {/* Main sun — cool daylight */}
       <directionalLight
-        position={[3, 8, 4]}
-        color="#c8d4ff"
-        intensity={1.2}
+        position={[8, 14, 6]}
+        color="#f0f4ff"
+        intensity={1.3}
         castShadow
         shadow-mapSize={[1024, 1024] as unknown as number}
-        shadow-camera-near={0.5}
-        shadow-camera-far={20}
-        shadow-camera-left={-8}
-        shadow-camera-right={8}
-        shadow-camera-top={8}
-        shadow-camera-bottom={-8}
+        shadow-bias={-0.0002}
+        shadow-camera-left={-10}
+        shadow-camera-right={10}
+        shadow-camera-top={10}
+        shadow-camera-bottom={-10}
+        shadow-camera-near={0.1}
+        shadow-camera-far={40}
       />
-      <pointLight position={[-4, 3, -4]} color="#3040a0" intensity={0.4} />
-    </>
-  )
-}
-
-function SceneFloor() {
-  return (
-    <>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.32, 0]} receiveShadow>
-        <planeGeometry args={[22, 22]} />
-        <meshStandardMaterial color="#0b0e1a" roughness={1} metalness={0} />
-      </mesh>
-      {/* gridHelper: 6-char hex only — Three.js Color does not support alpha in hex */}
-      <gridHelper args={[18, 18, '#2a1f6a', '#1a2040']} position={[0, -0.31, 0]} />
+      {/* Fill light — soft from opposite side */}
+      <directionalLight position={[-5, 6, -4]} color="#4060a0" intensity={0.35} />
     </>
   )
 }
@@ -54,10 +47,10 @@ export function AgentOffice3D() {
 
   return (
     <div
-      className="relative w-full h-full min-h-[380px] rounded-xl border border-border"
-      style={{ background: '#0f1220' }}
+      className="relative w-full h-full min-h-[420px] rounded-xl border border-border"
+      style={{ background: '#1a1a2e' }}
     >
-      {/* Demo badge as plain DOM overlay — Html fullscreen not available in drei v9 */}
+      {/* Demo mode overlay */}
       {isDemoMode && (
         <div style={{
           position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)',
@@ -73,29 +66,53 @@ export function AgentOffice3D() {
         </div>
       )}
 
+      {/* Orbit hint */}
+      <div style={{
+        position: 'absolute', bottom: 8, right: 10, zIndex: 10,
+        fontSize: 9, color: 'rgba(255,255,255,0.25)',
+        pointerEvents: 'none', userSelect: 'none',
+      }}>
+        drag · scroll · right-click
+      </div>
+
       <Canvas
-        orthographic
-        camera={{ position: [8, 10, 8], zoom: 30, near: 0.1, far: 100 }}
+        camera={{
+          fov: 48,
+          position: [7, 10, 10],
+          near: 0.1,
+          far: 80,
+        }}
         shadows
         gl={{ antialias: true, alpha: false }}
         style={{ width: '100%', height: '100%', borderRadius: 'inherit', display: 'block' }}
       >
-        <SceneLights />
-        <SceneFloor />
+        <SceneLighting />
+
+        <OrbitControls
+          target={[0, 0.5, 0]}
+          minDistance={4}
+          maxDistance={24}
+          maxPolarAngle={Math.PI / 2.1}
+          enablePan={true}
+          dampingFactor={0.08}
+          enableDamping
+        />
 
         <Suspense fallback={null}>
+          <OfficeRoom />
+
           {agentDefinitions.map((def) => {
             const instance = agentInstances[def.id]
             const station  = STATIONS_3D[def.id]
             if (!instance || !station) return null
 
             return (
-              <Agent3D
+              <ClawAgent
                 key={def.id}
                 def={def}
                 instance={instance}
-                stationX={station.x}
-                stationZ={station.z}
+                worldX={station.x}
+                worldZ={station.z}
                 label={station.label}
                 onClick={() => setSelectedAgent(def.id)}
               />
