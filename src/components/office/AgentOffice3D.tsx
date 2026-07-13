@@ -77,8 +77,8 @@ export function AgentOffice3D() {
 
       <Canvas
         camera={{
-          fov: 52,
-          position: [7, 9, 12],
+          fov: 46,
+          position: [3, 18, 12],
           near: 0.1,
           far: 80,
         }}
@@ -91,7 +91,7 @@ export function AgentOffice3D() {
         <OrbitControls
           target={[0, 0, 0.5]}
           minDistance={4}
-          maxDistance={28}
+          maxDistance={32}
           maxPolarAngle={Math.PI / 2.1}
           enablePan={true}
           dampingFactor={0.08}

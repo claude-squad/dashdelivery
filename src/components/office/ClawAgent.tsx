@@ -65,6 +65,7 @@ export const ClawAgent = memo(function ClawAgent({
   const pulseRingRef   = useRef<THREE.Mesh>(null)
   const pulseMatRef    = useRef<THREE.MeshBasicMaterial>(null)
   const frameRef       = useRef(0)
+  const sittingPRef    = useRef(0)   // 0 = standing, 1 = fully seated at desk
 
   // ── Walk state ────────────────────────────────────────────────────────────
   const currentPosRef     = useRef({ x: worldX, z: worldZ })
@@ -164,25 +165,37 @@ export const ClawAgent = memo(function ClawAgent({
     const isWalking = isWalkingRef.current
     const walkSin   = Math.sin(f * 0.14)
 
+    // ── SITTING BLEND ────────────────────────────────────────────────────
+    // isSitting = IDLE at station, no pending walk → smoothly sit down at desk
+    const isSitting = !isWalking && !isWorking && !isError && instance.walkTarget === null
+    const sitTarget = isSitting ? 1 : 0
+    sittingPRef.current += (sitTarget - sittingPRef.current) * (sitTarget > sittingPRef.current ? 0.04 : 0.08)
+    const sp = sittingPRef.current
+
     // ── BODY ──────────────────────────────────────────────────────────────
     if (groupRef.current) {
       const g = groupRef.current
       if (isWalking) {
         g.position.y = Math.abs(walkSin) * 0.04
         g.position.x = 0
+        g.rotation.x = 0.15 * sp   // fade sit-lean as agent stands up to walk
         g.rotation.y = 0
       } else if (isWorking) {
         g.position.y = Math.abs(Math.sin(f * 0.14)) * 0.04
         g.position.x = 0
+        g.rotation.x = 0
         g.rotation.y = Math.sin(f * 0.04) * 0.06
       } else if (isError) {
         g.position.y = 0
         g.position.x = Math.sin(f * 0.28) * 0.04
+        g.rotation.x = 0
         g.rotation.y = 0
       } else {
-        g.position.y = Math.sin(f * 0.03) * 0.01
+        // Blend standing idle ↔ sitting at desk
+        g.position.y = Math.sin(f * 0.03) * 0.01 * (1 - sp) - 0.06 * sp
         g.position.x = 0
-        g.rotation.y = Math.sin(f * 0.008) * 0.04
+        g.rotation.x = 0.15 * sp   // lean forward toward monitor
+        g.rotation.y = Math.sin(f * 0.008) * 0.04 * (1 - sp)
       }
     }
 
@@ -192,16 +205,17 @@ export const ClawAgent = memo(function ClawAgent({
       if (rightArmRef.current) { rightArmRef.current.rotation.x = -walkSin * 0.4;  rightArmRef.current.rotation.z =  0.08 }
     } else {
       if (leftArmRef.current) {
+        // Sitting: arm forward+down on keyboard; standing: gentle swing
         leftArmRef.current.rotation.x = isWorking
           ? -(0.28 + Math.abs(Math.sin(f * 0.18 + Math.PI)) * 0.28)
-          : Math.sin(f * 0.08) * 0.08
-        leftArmRef.current.rotation.z = isWorking ? -0.58 : -0.08
+          : -0.35 * sp + Math.sin(f * 0.08) * 0.08 * (1 - sp)
+        leftArmRef.current.rotation.z = isWorking ? -0.58 : (-0.22 * sp - 0.08 * (1 - sp))
       }
       if (rightArmRef.current) {
         rightArmRef.current.rotation.x = isWorking
           ? -(0.28 + Math.abs(Math.sin(f * 0.18)) * 0.28)
-          : Math.sin(f * 0.08 + Math.PI) * 0.08
-        rightArmRef.current.rotation.z = isWorking ? 0.58 : 0.08
+          : -0.35 * sp + Math.sin(f * 0.08 + Math.PI) * 0.08 * (1 - sp)
+        rightArmRef.current.rotation.z = isWorking ? 0.58 : (0.22 * sp + 0.08 * (1 - sp))
       }
     }
 
