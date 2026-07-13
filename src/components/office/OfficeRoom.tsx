@@ -206,10 +206,10 @@ export const OfficeRoom = memo(function OfficeRoom() {
         )
       })}
 
-      {/* Floor rug under meeting table */}
+      {/* Floor rug under meeting table — covers table + all 4 meeting chairs */}
       <mesh position={[TABLE_X, 0.002, TABLE_Z]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[3.2, 2.8]} />
-        <meshLambertMaterial color="#6b4c3b" transparent opacity={0.55} />
+        <planeGeometry args={[3.4, 3.2]} />
+        <meshLambertMaterial color="#7c4f3b" transparent opacity={0.72} />
       </mesh>
 
       {/* === WALLS === */}
@@ -232,6 +232,44 @@ export const OfficeRoom = memo(function OfficeRoom() {
       <mesh position={[ROOM_W / 2, 0.5, 0]} receiveShadow>
         <boxGeometry args={[0.12, 1, ROOM_D]} />
         <meshStandardMaterial color="#8d6e63" emissive="#4e342e" emissiveIntensity={0.5} roughness={0.9} />
+      </mesh>
+
+      {/* === WALL WAINSCOTING + CROWN MOLDING === */}
+      {/* North wall */}
+      <mesh position={[0, 0.165, -ROOM_D / 2 + 0.065]}>
+        <boxGeometry args={[ROOM_W - 0.24, 0.33, 0.002]} />
+        <meshStandardMaterial color="#5a3525" roughness={0.85} />
+      </mesh>
+      <mesh position={[0, 0.93, -ROOM_D / 2 + 0.065]}>
+        <boxGeometry args={[ROOM_W - 0.24, 0.04, 0.025]} />
+        <meshStandardMaterial color="#4a2a1a" roughness={0.7} metalness={0.08} />
+      </mesh>
+      {/* South wall */}
+      <mesh position={[0, 0.165, ROOM_D / 2 - 0.065]}>
+        <boxGeometry args={[ROOM_W - 0.24, 0.33, 0.002]} />
+        <meshStandardMaterial color="#5a3525" roughness={0.85} />
+      </mesh>
+      <mesh position={[0, 0.93, ROOM_D / 2 - 0.065]}>
+        <boxGeometry args={[ROOM_W - 0.24, 0.04, 0.025]} />
+        <meshStandardMaterial color="#4a2a1a" roughness={0.7} metalness={0.08} />
+      </mesh>
+      {/* West wall */}
+      <mesh position={[-ROOM_W / 2 + 0.065, 0.165, 0]}>
+        <boxGeometry args={[0.002, 0.33, ROOM_D - 0.24]} />
+        <meshStandardMaterial color="#5a3525" roughness={0.85} />
+      </mesh>
+      <mesh position={[-ROOM_W / 2 + 0.065, 0.93, 0]}>
+        <boxGeometry args={[0.025, 0.04, ROOM_D - 0.24]} />
+        <meshStandardMaterial color="#4a2a1a" roughness={0.7} metalness={0.08} />
+      </mesh>
+      {/* East wall */}
+      <mesh position={[ROOM_W / 2 - 0.065, 0.165, 0]}>
+        <boxGeometry args={[0.002, 0.33, ROOM_D - 0.24]} />
+        <meshStandardMaterial color="#5a3525" roughness={0.85} />
+      </mesh>
+      <mesh position={[ROOM_W / 2 - 0.065, 0.93, 0]}>
+        <boxGeometry args={[0.025, 0.04, ROOM_D - 0.24]} />
+        <meshStandardMaterial color="#4a2a1a" roughness={0.7} metalness={0.08} />
       </mesh>
 
       {/* Window on east wall — daylight bleed */}
@@ -281,6 +319,31 @@ export const OfficeRoom = memo(function OfficeRoom() {
       <Chair x={TABLE_X}         z={TABLE_Z + 1.0} rotY={0} />
       <Chair x={TABLE_X - 1.0}   z={TABLE_Z}       rotY={Math.PI / 2} />
       <Chair x={TABLE_X + 1.0}   z={TABLE_Z}       rotY={-Math.PI / 2} />
+
+      {/* === MEETING TABLE PENDANT LAMP === */}
+      <group position={[TABLE_X, 0.97, TABLE_Z]}>
+        {/* Cord */}
+        <mesh position={[0, 0.23, 0]}>
+          <cylinderGeometry args={[0.006, 0.006, 0.46, 6]} />
+          <meshStandardMaterial color="#1a1a2e" roughness={0.5} />
+        </mesh>
+        {/* Shade — open-bottom cone, visible from below */}
+        <mesh>
+          <cylinderGeometry args={[0.28, 0.14, 0.22, 18, 1, true]} />
+          <meshStandardMaterial color="#c2410c" roughness={0.88} side={2} />
+        </mesh>
+        {/* Outer shade shell */}
+        <mesh>
+          <cylinderGeometry args={[0.29, 0.15, 0.22, 18, 1, true]} />
+          <meshStandardMaterial color="#9a2f08" roughness={0.9} />
+        </mesh>
+        {/* Glowing bulb */}
+        <mesh>
+          <sphereGeometry args={[0.05, 10, 10]} />
+          <meshStandardMaterial color="#fff8e1" emissive="#fffbeb" emissiveIntensity={2.5} />
+        </mesh>
+        <pointLight color="#fff0cc" intensity={1.4} distance={5.5} decay={2} />
+      </group>
 
       {/* === DECORATION === */}
       {/* Plants in corners */}

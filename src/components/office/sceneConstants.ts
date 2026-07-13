@@ -1,15 +1,15 @@
 export const U = 0.28
 
-// Agent positions in 3D world space (derived from SVG station % coords via svgToWorld)
+// Agent positions in 3D world space — perimeter layout, meeting table clear at [0, 1.8]
 export const STATIONS_3D: Record<string, { x: number; z: number; label: string }> = {
-  pm:  { x: -1.44, z: -4.08, label: 'PM'  },
-  tl:  { x:  1.44, z: -3.84, label: 'TL'  },
-  dev: { x:  2.64, z: -1.44, label: 'DEV' },
-  qa:  { x:  1.20, z:  0.96, label: 'QA'  },
-  ux:  { x: -2.40, z:  0.48, label: 'UX'  },
-  pe:  { x: -0.48, z:  2.16, label: 'PE'  },
-  sec: { x: -3.84, z: -1.68, label: 'SEC' },
-  rel: { x:  3.84, z:  0.96, label: 'REL' },
+  pm:  { x: -3.0, z: -4.0, label: 'PM'  },  // north-west — product
+  pe:  { x:  3.0, z: -4.0, label: 'PE'  },  // north-east — prompt eng
+  tl:  { x:  4.5, z: -2.0, label: 'TL'  },  // east-north — tech lead
+  dev: { x:  4.5, z:  1.0, label: 'DEV' },  // east-south — developer
+  ux:  { x: -4.5, z: -2.0, label: 'UX'  },  // west-north — design
+  sec: { x: -4.5, z:  1.0, label: 'SEC' },  // west-south — security
+  qa:  { x: -1.5, z:  4.5, label: 'QA'  },  // south-west — quality
+  rel: { x:  1.5, z:  4.5, label: 'REL' },  // south-east — release
 }
 
 export const STATUS_DOT_COLOR: Record<string, string> = {

@@ -42,7 +42,7 @@ interface ClawAgentProps {
   onClick:  () => void
 }
 
-const AGENT_SCALE = 1.75
+const AGENT_SCALE = 2.0
 const WALK_SPEED  = 0.018  // world units per frame at 60fps ≈ 1.1 wu/s
 
 export const ClawAgent = memo(function ClawAgent({
