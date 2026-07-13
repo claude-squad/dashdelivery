@@ -97,6 +97,7 @@ export interface AgentInstance {
   filesChanged?: string[]
   toolsUsed?: string[]
   errorMessage?: string
+  walkTarget?: { x: number; z: number } | null
 }
 
 export interface DomainEvent {
