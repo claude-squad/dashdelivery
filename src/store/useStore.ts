@@ -50,6 +50,7 @@ interface AppState {
   setGateExecution: (state: AppState['gateExecution']) => void
 
   addDemand: (demand: Demand) => void
+  updateDemand: (id: string, patch: Partial<Demand>) => void
   approveDemand: (id: string, comment: string) => void
   rejectDemand: (id: string, reason: string) => void
   updateDemandGate: (demandId: string, gateId: string, patch: Partial<QualityGate>) => void
@@ -90,6 +91,11 @@ export const useStore = create<AppState>()(persist((set) => ({
 
   addDemand: (demand) =>
     set((s) => ({ demands: [...s.demands, demand] })),
+
+  updateDemand: (id, patch) =>
+    set((s) => ({
+      demands: s.demands.map((d) => d.id === id ? { ...d, ...patch } : d),
+    })),
 
   approveDemand: (id) =>
     set((s) => ({

@@ -20,12 +20,14 @@ import { GateExecutionBar } from '@/components/gates/GateExecutionBar'
 import { useDemoTick } from '@/hooks/useDemoTick'
 import { useSocket } from '@/hooks/useSocket'
 import { useGateExecution } from '@/hooks/useGateExecution'
+import { useDemandExecution } from '@/hooks/useDemandExecution'
 import { useStore } from '@/store/useStore'
 
 export default function App() {
   useSocket()
   useDemoTick()
   useGateExecution()
+  useDemandExecution()
 
   const { selectedDemandId } = useStore()
 
