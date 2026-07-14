@@ -124,7 +124,7 @@ export const useStore = create<AppState>()(persist((set) => ({
   setTheme: (t) => set({ theme: t }),
   githubToken: '',
   setGithubToken: (t) => set({ githubToken: t }),
-  githubRepo: '',
+  githubRepo: 'claude-squad/dashdelivery',
   setGithubRepo: (r) => set({ githubRepo: r }),
 
   setDemoMode: (v) => set({ isDemoMode: v }),
@@ -229,7 +229,7 @@ export const useStore = create<AppState>()(persist((set) => ({
       webhookUrl: p.webhookUrl ?? '',
       theme: p.theme ?? 'dark',
       githubToken: p.githubToken ?? '',
-      githubRepo: p.githubRepo ?? '',
+      githubRepo: p.githubRepo ?? 'claude-squad/dashdelivery',
     }
   },
 }))
