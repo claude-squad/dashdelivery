@@ -1,37 +1,71 @@
-import { LayoutDashboard, List, Users, Bot, BarChart2, FileText, CheckSquare, TestTube, Clock, Activity, Radio, LineChart, Settings, Zap } from 'lucide-react'
+import React from 'react'
+import {
+  LayoutDashboard, List, Users, Bot, BarChart2,
+  FileText, CheckSquare, TestTube, Clock, Activity,
+  Radio, LineChart, Zap
+} from 'lucide-react'
 import { clsx } from 'clsx'
 import { useStore } from '@/store/useStore'
-
-const navSection = (label: string, items: NavItem[]) => ({ label, items })
-const nav = (icon: React.ReactNode, label: string, key: string) => ({ icon, label, key })
+import { SettingsButton } from '@/components/layout/SettingsPanel'
 
 interface NavItem { icon: React.ReactNode; label: string; key: string }
+const nav = (icon: React.ReactNode, label: string, key: string): NavItem => ({ icon, label, key })
+const section = (label: string, items: NavItem[]) => ({ label, items })
+
+// Map sidebar keys → DemandDetail tab IDs (for DEMANDA ATUAL section)
+const DETAIL_TAB_MAP: Record<string, string> = {
+  summary:    'overview',
+  briefing:   'technical',
+  criteria:   'criteria',
+  tests:      'tests',
+  timeline:   'events',
+  activities: 'events',
+}
 
 const SECTIONS = [
-  navSection('VISÃO GERAL', [
-    nav(<LayoutDashboard size={15} />, 'Dashboard', 'dashboard'),
-    nav(<List size={15} />, 'Demandas', 'demands'),
-    nav(<Users size={15} />, 'Squads', 'squads'),
-    nav(<Bot size={15} />, 'Agentes', 'agents'),
-    nav(<BarChart2 size={15} />, 'Relatórios', 'reports'),
+  section('VISÃO GERAL', [
+    nav(<LayoutDashboard size={15} />, 'Dashboard',  'dashboard'),
+    nav(<List size={15} />,            'Demandas',   'demands'),
+    nav(<Users size={15} />,           'Squads',     'squads'),
+    nav(<Bot size={15} />,             'Agentes',    'agents'),
+    nav(<BarChart2 size={15} />,       'Relatórios', 'reports'),
   ]),
-  navSection('DEMANDA ATUAL', [
-    nav(<FileText size={15} />, 'Resumo', 'summary'),
-    nav(<FileText size={15} />, 'Briefing', 'briefing'),
+  section('DEMANDA ATUAL', [
+    nav(<FileText size={15} />,    'Resumo',              'summary'),
+    nav(<FileText size={15} />,    'Briefing',            'briefing'),
     nav(<CheckSquare size={15} />, 'Critérios de Aceite', 'criteria'),
-    nav(<TestTube size={15} />, 'Testes', 'tests'),
-    nav(<Clock size={15} />, 'Timeline', 'timeline'),
-    nav(<Activity size={15} />, 'Atividades', 'activities'),
+    nav(<TestTube size={15} />,    'Testes',              'tests'),
+    nav(<Clock size={15} />,       'Timeline',            'timeline'),
+    nav(<Activity size={15} />,    'Atividades',          'activities'),
   ]),
-  navSection('MONITORAMENTO', [
-    nav(<Radio size={15} />, 'Agentes em Ação', 'live-agents'),
+  section('MONITORAMENTO', [
+    nav(<Radio size={15} />,     'Agentes em Ação',   'live-agents'),
     nav(<LineChart size={15} />, 'Logs em Tempo Real', 'live-logs'),
-    nav(<BarChart2 size={15} />, 'Métricas', 'metrics'),
+    nav(<BarChart2 size={15} />, 'Métricas',           'metrics'),
   ]),
 ]
 
 export function Sidebar() {
-  const [active, setActive] = React.useState('dashboard')
+  const {
+    sidebarView,
+    setSidebarView,
+    activeDemandId,
+    setSelectedDemand,
+    setDemandDetailTab,
+  } = useStore()
+
+  function handleNav(key: string) {
+    setSidebarView(key)
+    const detailTab = DETAIL_TAB_MAP[key]
+    if (detailTab) {
+      // Open DemandDetail with the correct tab
+      setDemandDetailTab(detailTab)
+      if (activeDemandId) setSelectedDemand(activeDemandId)
+    } else {
+      // Non-detail views: close any open demand detail
+      setSelectedDemand(null)
+    }
+  }
 
   return (
     <aside className="w-[196px] shrink-0 bg-surface-1 border-r border-border flex flex-col h-full">
@@ -50,18 +84,18 @@ export function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-5">
-        {SECTIONS.map((section) => (
-          <div key={section.label}>
+        {SECTIONS.map((s) => (
+          <div key={s.label}>
             <div className="px-2 mb-1.5 text-[9px] font-semibold tracking-widest text-white/30 uppercase">
-              {section.label}
+              {s.label}
             </div>
-            {section.items.map((item) => (
+            {s.items.map((item) => (
               <button
                 key={item.key}
-                onClick={() => setActive(item.key)}
+                onClick={() => handleNav(item.key)}
                 className={clsx(
                   'w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] font-medium transition-all duration-150 text-left',
-                  active === item.key
+                  sidebarView === item.key
                     ? 'bg-accent text-white shadow-sm'
                     : 'text-white/50 hover:text-white/80 hover:bg-white/5'
                 )}
@@ -74,16 +108,13 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Settings */}
-      <div className="px-2 py-3 border-t border-border">
-        <button className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] font-medium text-white/40 hover:text-white/70 hover:bg-white/5 transition-all">
-          <Settings size={15} />
+      {/* Settings at bottom */}
+      <div className="px-2 py-3 border-t border-border flex items-center gap-1">
+        <SettingsButton />
+        <span className="text-[13px] font-medium text-white/40 hover:text-white/70 transition-colors">
           Configurações
-        </button>
+        </span>
       </div>
     </aside>
   )
 }
-
-// needed for JSX in the nav helper
-import React from 'react'

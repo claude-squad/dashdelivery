@@ -828,7 +828,9 @@ function useDemand() {
 export function DemandDetail() {
   const { setSelectedDemand } = useStore()
   const demand = useDemand()
-  const [activeTab, setActiveTab] = useState<TabId>('overview')
+  const { demandDetailTab, setDemandDetailTab } = useStore()
+  const activeTab = (TABS.some(t => t.id === demandDetailTab) ? demandDetailTab : 'overview') as TabId
+  const setActiveTab = (tab: TabId) => setDemandDetailTab(tab)
 
   if (!demand) {
     return (

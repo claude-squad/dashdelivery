@@ -81,6 +81,13 @@ interface AppState {
   approveDemand: (id: string, comment: string) => void
   rejectDemand: (id: string, reason: string) => void
   updateDemandGate: (demandId: string, gateId: string, patch: Partial<QualityGate>) => void
+  sidebarView: string
+  setSidebarView: (v: string) => void
+  isSettingsOpen: boolean
+  openSettings: () => void
+  closeSettings: () => void
+  demandDetailTab: string
+  setDemandDetailTab: (tab: string) => void
 }
 
 export const useStore = create<AppState>()(persist((set) => ({
@@ -190,6 +197,13 @@ export const useStore = create<AppState>()(persist((set) => ({
         return { ...d, qualityGates: updatedGates }
       }),
     })),
+  sidebarView: 'dashboard',
+  setSidebarView: (v) => set({ sidebarView: v }),
+  isSettingsOpen: false,
+  openSettings: () => set({ isSettingsOpen: true }),
+  closeSettings: () => set({ isSettingsOpen: false }),
+  demandDetailTab: 'overview',
+  setDemandDetailTab: (tab) => set({ demandDetailTab: tab }),
 }), {
   name: 'dashdelivery-demands',
   version: 3,

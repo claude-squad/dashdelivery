@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Settings, X, Webhook, Check } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 
-function SettingsPanel({ onClose }: { onClose: () => void }) {
+export function SettingsPanel({ onClose }: { onClose: () => void }) {
   const { webhookUrl, setWebhookUrl, githubToken, setGithubToken, githubRepo, setGithubRepo } = useStore()
   const [url, setUrl] = useState(webhookUrl)
   const [saved, setSaved] = useState(false)
@@ -178,19 +178,14 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
 }
 
 export function SettingsButton() {
-  const [open, setOpen] = useState(false)
+  const { openSettings } = useStore()
   return (
-    <>
-      <button
-        onClick={() => setOpen(true)}
-        className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-white/40 hover:text-white/70 transition-colors"
-        title="Configurações"
-      >
-        <Settings size={15} />
-      </button>
-      <AnimatePresence>
-        {open && <SettingsPanel key="panel" onClose={() => setOpen(false)} />}
-      </AnimatePresence>
-    </>
+    <button
+      onClick={openSettings}
+      className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-white/40 hover:text-white/70 transition-colors"
+      title="Configurações"
+    >
+      <Settings size={15} />
+    </button>
   )
 }

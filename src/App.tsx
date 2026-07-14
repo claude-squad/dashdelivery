@@ -25,6 +25,8 @@ import { useSocket } from '@/hooks/useSocket'
 import { useGateExecution } from '@/hooks/useGateExecution'
 import { useDemandExecution } from '@/hooks/useDemandExecution'
 import { useStore } from '@/store/useStore'
+import { SettingsPanel } from '@/components/layout/SettingsPanel'
+import { Users } from 'lucide-react'
 
 export default function App() {
   useSocket()
@@ -32,7 +34,7 @@ export default function App() {
   useGateExecution()
   useDemandExecution()
 
-  const { selectedDemandId, theme, pendingApproval, pendingPR } = useStore()
+  const { selectedDemandId, isSettingsOpen, closeSettings, sidebarView, theme, pendingApproval, pendingPR } = useStore()
 
   useEffect(() => {
     document.documentElement.classList.toggle('light', theme === 'light')
@@ -47,71 +49,94 @@ export default function App() {
         <TopBar />
         <PipelineSteps />
 
-        <AnimatePresence mode="wait">
-          {selectedDemandId ? (
-            <motion.div
-              key="detail"
-              className="flex-1 min-h-0 overflow-hidden"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-            >
-              <DemandDetail />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="dashboard"
-              className="flex-1 overflow-y-auto"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="p-4 space-y-3">
-                {/* Top info cards row */}
-                <div className="grid grid-cols-4 gap-3">
-                  <DemandSummaryCard />
-                  <AcceptanceCriteriaCard />
-                  <PromptEngineerCard />
-                  <ExecutionPlanCard />
-                </div>
-
-                {/* Central row: Agent List | Virtual Office | Activity Stream */}
-                <div className="grid grid-cols-[220px_1fr_220px] gap-3">
-                  <div className="bg-surface-2 border border-border rounded-xl p-3 flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold tracking-widest text-white/30 uppercase">
-                        Agentes em Ação
-                      </span>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-green-500/15 text-green-400 font-medium">
-                        Tempo Real
-                      </span>
-                    </div>
-                    <AgentList />
-                  </div>
-
-                  <AgentOffice3D />
-
-                  <div className="bg-surface-2 border border-border rounded-xl p-3 flex flex-col gap-2">
-                    <div className="text-[10px] font-bold tracking-widest text-white/30 uppercase">
-                      Atividades Recentes
-                    </div>
-                    <ActivityStream />
-                  </div>
-                </div>
-
-                <MetricsBar />
+        {/* ── Main content — switches based on sidebar nav ─────────────── */}
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+          <AnimatePresence mode="wait">
+            {selectedDemandId ? (
+              <motion.div key="detail" className="flex-1 min-h-0 overflow-hidden" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+                <DemandDetail />
+              </motion.div>
+            ) : sidebarView === 'demands' ? (
+              <motion.div key="demands" className="flex-1 overflow-y-auto p-4" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
                 <DemandListPanel />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              </motion.div>
+            ) : sidebarView === 'live-agents' ? (
+              <motion.div key="live-agents" className="flex-1 min-h-0 flex gap-3 p-4" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+                <div className="flex-1 min-h-0"><AgentOffice3D /></div>
+                <div className="w-52 bg-surface-2 border border-border rounded-xl p-3 overflow-y-auto shrink-0">
+                  <div className="text-[10px] font-bold tracking-widest text-white/30 uppercase mb-2">Squad</div>
+                  <AgentList />
+                </div>
+              </motion.div>
+            ) : sidebarView === 'live-logs' ? (
+              <motion.div key="live-logs" className="flex-1 overflow-y-auto p-4" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+                <div className="bg-surface-2 border border-border rounded-xl p-4">
+                  <div className="text-[10px] font-bold tracking-widest text-white/30 uppercase mb-3">Logs em Tempo Real</div>
+                  <ActivityStream />
+                </div>
+              </motion.div>
+            ) : sidebarView === 'metrics' ? (
+              <motion.div key="metrics" className="flex-1 overflow-y-auto p-4 space-y-3" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+                <MetricsBar />
+              </motion.div>
+            ) : sidebarView === 'agents' ? (
+              <motion.div key="agents" className="flex-1 overflow-y-auto p-4" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+                <div className="bg-surface-2 border border-border rounded-xl p-4">
+                  <div className="text-[10px] font-bold tracking-widest text-white/30 uppercase mb-3">Agentes do Squad</div>
+                  <AgentList />
+                </div>
+              </motion.div>
+            ) : sidebarView === 'reports' ? (
+              <motion.div key="reports" className="flex-1 overflow-y-auto p-4 space-y-3" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+                <MetricsBar />
+                <div className="bg-surface-2 border border-border rounded-xl p-4">
+                  <div className="text-[10px] font-bold tracking-widest text-white/30 uppercase mb-3">Atividades Recentes</div>
+                  <ActivityStream />
+                </div>
+              </motion.div>
+            ) : sidebarView === 'squads' ? (
+              <motion.div key="squads" className="flex-1 flex items-center justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                <div className="text-center space-y-2">
+                  <Users size={40} className="text-white/10 mx-auto" />
+                  <div className="text-sm text-white/30">Gestão de Squads em desenvolvimento</div>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div key="dashboard" className="flex-1 overflow-y-auto" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+                <div className="p-4 space-y-3">
+                  <div className="grid grid-cols-4 gap-3">
+                    <DemandSummaryCard />
+                    <AcceptanceCriteriaCard />
+                    <PromptEngineerCard />
+                    <ExecutionPlanCard />
+                  </div>
+                  <div className="grid grid-cols-[220px_1fr_220px] gap-3">
+                    <div className="bg-surface-2 border border-border rounded-xl p-3 flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold tracking-widest text-white/30 uppercase">Agentes em Ação</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-green-500/15 text-green-400 font-medium">Tempo Real</span>
+                      </div>
+                      <AgentList />
+                    </div>
+                    <AgentOffice3D />
+                    <div className="bg-surface-2 border border-border rounded-xl p-3 flex flex-col gap-2">
+                      <div className="text-[10px] font-bold tracking-widest text-white/30 uppercase">Atividades Recentes</div>
+                      <ActivityStream />
+                    </div>
+                  </div>
+                  <MetricsBar />
+                  <DemandListPanel />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       <GateExecutionBar />
       <AgentDrawer />
       <NewDemandModal />
+      {isSettingsOpen && <SettingsPanel onClose={closeSettings} />}
       {pendingApproval && <ApprovalGateModal />}
       {pendingPR && <PRPreviewModal />}
     </div>
