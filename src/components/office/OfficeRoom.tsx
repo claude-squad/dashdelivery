@@ -362,38 +362,39 @@ export const OfficeRoom = memo(function OfficeRoom() {
       {/* Whiteboard — north wall */}
       <Whiteboard x={0} z={-ROOM_D / 2 + 0.1} rotY={0} />
 
-      {/* BRQ corporate sign — mounted above whiteboard */}
-      <group position={[0, 1.08, -ROOM_D / 2 + 0.13]}>
-        {/* Backing panel — dark navy */}
+      {/* BRQ corporate sign — mounted above whiteboard, clear of z-fighting */}
+      {/* z=-6.25 keeps it 0.13 in front of whiteboard face at z=-6.38 */}
+      <group position={[0, 1.18, -ROOM_D / 2 + 0.30]} rotation={[-0.18, 0, 0]}>
+        {/* Backing panel — dark navy, strong emissive so it's always legible */}
         <mesh castShadow>
-          <boxGeometry args={[2.2, 0.28, 0.022]} />
-          <meshStandardMaterial color="#0b1940" roughness={0.4} metalness={0.35} emissive="#0b1940" emissiveIntensity={0.18} />
+          <boxGeometry args={[2.6, 0.38, 0.028]} />
+          <meshStandardMaterial color="#0b1940" roughness={0.35} metalness={0.4} emissive="#0a1535" emissiveIntensity={0.55} />
         </mesh>
         {/* Top accent line */}
-        <mesh position={[0, 0.128, 0.012]}>
-          <boxGeometry args={[2.16, 0.007, 0.001]} />
+        <mesh position={[0, 0.175, 0.015]}>
+          <boxGeometry args={[2.55, 0.009, 0.001]} />
           <meshBasicMaterial color="#2563eb" />
         </mesh>
         {/* Bottom accent line */}
-        <mesh position={[0, -0.128, 0.012]}>
-          <boxGeometry args={[2.16, 0.007, 0.001]} />
+        <mesh position={[0, -0.175, 0.015]}>
+          <boxGeometry args={[2.55, 0.009, 0.001]} />
           <meshBasicMaterial color="#2563eb" />
         </mesh>
         {/* BRQ text */}
-        <Text position={[-0.52, 0.01, 0.014]} fontSize={0.165} color="#ffffff" anchorX="center" anchorY="middle" letterSpacing={0.05}>
+        <Text position={[-0.60, 0.01, 0.018]} fontSize={0.20} color="#ffffff" anchorX="center" anchorY="middle" letterSpacing={0.06}>
           BRQ
         </Text>
         {/* Vertical divider */}
-        <mesh position={[-0.08, 0, 0.013]}>
-          <boxGeometry args={[0.007, 0.18, 0.001]} />
+        <mesh position={[-0.09, 0, 0.016]}>
+          <boxGeometry args={[0.008, 0.24, 0.001]} />
           <meshBasicMaterial color="#3b82f6" />
         </mesh>
         {/* Digital Solutions text */}
-        <Text position={[0.55, 0.01, 0.014]} fontSize={0.063} color="#93c5fd" anchorX="center" anchorY="middle" maxWidth={1.0} lineHeight={1.35}>
+        <Text position={[0.62, 0.01, 0.018]} fontSize={0.075} color="#93c5fd" anchorX="center" anchorY="middle" maxWidth={1.1} lineHeight={1.4}>
           {'Digital\nSolutions'}
         </Text>
-        {/* Subtle glow */}
-        <pointLight color="#4488ff" intensity={0.12} distance={1.5} decay={2} />
+        {/* Sign glow light */}
+        <pointLight color="#3b82f6" intensity={0.25} distance={2.0} decay={2} />
       </group>
 
       {/* Bookshelves — west + east walls */}
