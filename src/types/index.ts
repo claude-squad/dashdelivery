@@ -100,6 +100,7 @@ export interface AgentInstance {
   toolsUsed?: string[]
   errorMessage?: string
   walkTarget?: { x: number; z: number } | null
+  taskComplete?: boolean
 }
 
 export interface DomainEvent {

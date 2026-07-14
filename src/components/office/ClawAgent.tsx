@@ -81,8 +81,11 @@ export const ClawAgent = memo(function ClawAgent({
 
   // ── Derived appearance ────────────────────────────────────────────────────
   const { status, currentTask } = instance
-  const isWorking = ACTIVE_STATUSES.has(status)
-  const isError   = BLOCKED_STATUSES.has(status)
+  const isWorking   = ACTIVE_STATUSES.has(status)
+  const isError     = BLOCKED_STATUSES.has(status)
+  // JSX-visible state derivations (walk state read from ref at render time)
+  const isTyping    = isWorking && !isWalkingRef.current && instance.walkTarget === null
+  const isAtMeeting = isWorking && !isWalkingRef.current && instance.walkTarget !== null
 
   const appear     = useMemo(() => resolveAppearance(def.id, def.color), [def.id, def.color])
   const agentSeed  = useMemo(() => djb2(def.id) * 90, [def.id])
@@ -165,9 +168,16 @@ export const ClawAgent = memo(function ClawAgent({
     const isWalking = isWalkingRef.current
     const walkSin   = Math.sin(f * 0.14)
 
+    // ── AGENT STATES ──────────────────────────────────────────────────────
+    const isTyping    = isWorking && !isWalking && instance.walkTarget === null
+    const isAtMeeting = isWorking && !isWalking && instance.walkTarget !== null
+
+    // Face desk (north) when typing at workstation
+    if (isTyping) facingRef.current = Math.PI
+
     // ── SITTING BLEND ────────────────────────────────────────────────────
-    // isSitting = IDLE at station, no pending walk → smoothly sit down at desk
-    const isSitting = !isWalking && !isWorking && !isError && instance.walkTarget === null
+    // isSitting = idle at desk OR typing at desk (both produce seated pose)
+    const isSitting = (!isWorking && !isError && instance.walkTarget === null && !isWalking) || isTyping
     const sitTarget = isSitting ? 1 : 0
     sittingPRef.current += (sitTarget - sittingPRef.current) * (sitTarget > sittingPRef.current ? 0.04 : 0.08)
     const sp = sittingPRef.current
@@ -178,23 +188,30 @@ export const ClawAgent = memo(function ClawAgent({
       if (isWalking) {
         g.position.y = Math.abs(walkSin) * 0.04
         g.position.x = 0
-        g.rotation.x = 0.15 * sp   // fade sit-lean as agent stands up to walk
+        g.rotation.x = 0.15 * sp
         g.rotation.y = 0
-      } else if (isWorking) {
-        g.position.y = Math.abs(Math.sin(f * 0.14)) * 0.04
+      } else if (isTyping) {
+        // At desk: seated, lean forward, subtle head bob while typing
+        g.position.y = -0.06 * sp
+        g.position.x = 0
+        g.rotation.x = (0.22 + Math.sin(f * 0.13 + agentSeed) * 0.028) * sp
+        g.rotation.y = 0
+      } else if (isAtMeeting) {
+        // At meeting table: standing, engaged, slight sway while discussing
+        g.position.y = Math.sin(f * 0.09 + agentSeed) * 0.012
         g.position.x = 0
         g.rotation.x = 0
-        g.rotation.y = Math.sin(f * 0.04) * 0.06
+        g.rotation.y = Math.sin(f * 0.055 + agentSeed) * 0.11
       } else if (isError) {
         g.position.y = 0
         g.position.x = Math.sin(f * 0.28) * 0.04
         g.rotation.x = 0
         g.rotation.y = 0
       } else {
-        // Blend standing idle ↔ sitting at desk
+        // Idle: gentle breathing + sit blend
         g.position.y = Math.sin(f * 0.03) * 0.01 * (1 - sp) - 0.06 * sp
         g.position.x = 0
-        g.rotation.x = 0.15 * sp   // lean forward toward monitor
+        g.rotation.x = 0.15 * sp
         g.rotation.y = Math.sin(f * 0.008) * 0.04 * (1 - sp)
       }
     }
@@ -203,19 +220,36 @@ export const ClawAgent = memo(function ClawAgent({
     if (isWalking) {
       if (leftArmRef.current)  { leftArmRef.current.rotation.x  =  walkSin * 0.4;  leftArmRef.current.rotation.z  = -0.08 }
       if (rightArmRef.current) { rightArmRef.current.rotation.x = -walkSin * 0.4;  rightArmRef.current.rotation.z =  0.08 }
-    } else {
+    } else if (isTyping) {
+      // Rapid keyboard typing — arms alternate up/down like real typing
+      const typPhase = f * 0.28 + agentSeed * 0.4
       if (leftArmRef.current) {
-        // Sitting: arm forward+down on keyboard; standing: gentle swing
-        leftArmRef.current.rotation.x = isWorking
-          ? -(0.28 + Math.abs(Math.sin(f * 0.18 + Math.PI)) * 0.28)
-          : -0.35 * sp + Math.sin(f * 0.08) * 0.08 * (1 - sp)
-        leftArmRef.current.rotation.z = isWorking ? -0.58 : (-0.22 * sp - 0.08 * (1 - sp))
+        leftArmRef.current.rotation.x = -(0.42 + Math.abs(Math.sin(typPhase)) * 0.36) * sp
+        leftArmRef.current.rotation.z = -0.54 * sp
       }
       if (rightArmRef.current) {
-        rightArmRef.current.rotation.x = isWorking
-          ? -(0.28 + Math.abs(Math.sin(f * 0.18)) * 0.28)
-          : -0.35 * sp + Math.sin(f * 0.08 + Math.PI) * 0.08 * (1 - sp)
-        rightArmRef.current.rotation.z = isWorking ? 0.58 : (0.22 * sp + 0.08 * (1 - sp))
+        rightArmRef.current.rotation.x = -(0.42 + Math.abs(Math.sin(typPhase + 1.3)) * 0.36) * sp
+        rightArmRef.current.rotation.z = 0.54 * sp
+      }
+    } else if (isAtMeeting) {
+      // Discussion gesture — slow rhythmic arm movement
+      const gestSin = Math.sin(f * 0.045 + agentSeed)
+      if (leftArmRef.current) {
+        leftArmRef.current.rotation.x  = -0.18 + gestSin * 0.28
+        leftArmRef.current.rotation.z  = -0.10 + gestSin * 0.18
+      }
+      if (rightArmRef.current) {
+        rightArmRef.current.rotation.x = -0.18 - gestSin * 0.28
+        rightArmRef.current.rotation.z =  0.10 - gestSin * 0.18
+      }
+    } else {
+      if (leftArmRef.current) {
+        leftArmRef.current.rotation.x = -0.35 * sp + Math.sin(f * 0.08) * 0.08 * (1 - sp)
+        leftArmRef.current.rotation.z = (-0.22 * sp - 0.08 * (1 - sp))
+      }
+      if (rightArmRef.current) {
+        rightArmRef.current.rotation.x = -0.35 * sp + Math.sin(f * 0.08 + Math.PI) * 0.08 * (1 - sp)
+        rightArmRef.current.rotation.z = (0.22 * sp + 0.08 * (1 - sp))
       }
     }
 
@@ -240,7 +274,11 @@ export const ClawAgent = memo(function ClawAgent({
     if (mouthRef.current) {
       mouthRef.current.scale.x = isWalking
         ? 0.4 + (Math.sin(f * 0.14 + agentSeed * 0.07) + 1) * 0.3
-        : isWorking ? 0.9 : isError ? 0.4 : 0.7
+        : isTyping
+        ? 0.7 + Math.abs(Math.sin(f * 0.10 + agentSeed)) * 0.3  // slightly open while focused
+        : isAtMeeting
+        ? 0.5 + Math.abs(Math.sin(f * 0.06 + agentSeed)) * 0.6  // talking at meeting
+        : isError ? 0.4 : 0.7
     }
 
     // ── STATUS DOT ───────────────────────────────────────────────────────
@@ -431,15 +469,45 @@ export const ClawAgent = memo(function ClawAgent({
           </Text>
         </Billboard>
 
-        {/* Speech bubble — active task */}
-        {isWorking && currentTask && (
-          <Billboard position={[0, 1.5, 0]}>
+        {/* Typing at desk: task bubble with color accent */}
+        {isTyping && currentTask && (
+          <Billboard position={[0, 1.58, 0]}>
             <mesh position={[0, 0, -0.001]}>
-              <planeGeometry args={[2.2, 0.32]} />
-              <meshBasicMaterial color="#1d2a17" transparent opacity={0.94} depthWrite={false} />
+              <planeGeometry args={[2.4, 0.34]} />
+              <meshBasicMaterial color="#0d1f3c" transparent opacity={0.96} depthWrite={false} />
             </mesh>
-            <Text position={[0, 0, 0.001]} fontSize={0.12} color="#b9f99d" anchorX="center" anchorY="middle" maxWidth={2.0} depthOffset={-2}>
-              {currentTask.length > 32 ? currentTask.slice(0, 32) + '…' : currentTask}
+            <mesh position={[-1.12, 0, 0]}>
+              <planeGeometry args={[0.18, 0.30]} />
+              <meshBasicMaterial color={def.color} transparent opacity={0.8} depthWrite={false} />
+            </mesh>
+            <Text position={[0.05, 0, 0.001]} fontSize={0.113} color="#e2e8f0" anchorX="center" anchorY="middle" maxWidth={2.08} depthOffset={-2}>
+              {currentTask.length > 42 ? currentTask.slice(0, 42) + '…' : currentTask}
+            </Text>
+          </Billboard>
+        )}
+
+        {/* At meeting: discussion bubble */}
+        {isAtMeeting && currentTask && (
+          <Billboard position={[0, 1.55, 0]}>
+            <mesh position={[0, 0, -0.001]}>
+              <planeGeometry args={[2.1, 0.30]} />
+              <meshBasicMaterial color="#1a1035" transparent opacity={0.93} depthWrite={false} />
+            </mesh>
+            <Text position={[0, 0, 0.001]} fontSize={0.108} color="#c4b5fd" anchorX="center" anchorY="middle" maxWidth={1.9} depthOffset={-2}>
+              {currentTask.length > 38 ? currentTask.slice(0, 38) + '…' : currentTask}
+            </Text>
+          </Billboard>
+        )}
+
+        {/* Done indicator — green ✓ flash when task completes */}
+        {instance.taskComplete && (
+          <Billboard position={[0, 1.88, 0]}>
+            <mesh position={[0, 0, -0.001]}>
+              <circleGeometry args={[0.24, 24]} />
+              <meshBasicMaterial color="#14532d" transparent opacity={0.96} depthWrite={false} />
+            </mesh>
+            <Text position={[0, 0.01, 0.001]} fontSize={0.22} color="#4ade80" anchorX="center" anchorY="middle" depthOffset={-2}>
+              {'✓'}
             </Text>
           </Billboard>
         )}
