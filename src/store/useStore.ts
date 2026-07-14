@@ -3,6 +3,17 @@ import { persist } from 'zustand/middleware'
 import type { Demand, AgentInstance, AgentDefinition, DomainEvent, QualityGate } from '@/types'
 import { DEMO_DEMAND, DEMO_AGENT_INSTANCES, AGENT_DEFINITIONS } from '@/lib/demo'
 
+interface PendingApproval {
+  demandId: string
+  bugs: string[]
+}
+interface PendingPR {
+  demandId: string
+  title: string
+  body: string
+  url?: string
+}
+
 interface AppState {
   isDemoMode: boolean
   activeDemandId: string | null
@@ -45,6 +56,18 @@ interface AppState {
   } | null
   setPendingExecution: (v: AppState['pendingExecution']) => void
 
+  pendingApproval: PendingApproval | null
+  setPendingApproval: (v: PendingApproval | null) => void
+  pendingPR: PendingPR | null
+  setPendingPR: (v: PendingPR | null) => void
+  closePR: () => void
+  theme: 'dark' | 'light'
+  setTheme: (t: 'dark' | 'light') => void
+  githubToken: string
+  setGithubToken: (t: string) => void
+  githubRepo: string
+  setGithubRepo: (r: string) => void
+
   setDemoMode: (v: boolean) => void
   setActiveDemand: (id: string) => void
   setSelectedAgent: (id: string | null) => void
@@ -84,6 +107,18 @@ export const useStore = create<AppState>()(persist((set) => ({
 
   pendingExecution: null,
   setPendingExecution: (v) => set({ pendingExecution: v }),
+
+  pendingApproval: null,
+  setPendingApproval: (v) => set({ pendingApproval: v }),
+  pendingPR: null,
+  setPendingPR: (v) => set({ pendingPR: v }),
+  closePR: () => set({ pendingPR: null }),
+  theme: 'dark',
+  setTheme: (t) => set({ theme: t }),
+  githubToken: '',
+  setGithubToken: (t) => set({ githubToken: t }),
+  githubRepo: '',
+  setGithubRepo: (r) => set({ githubRepo: r }),
 
   setDemoMode: (v) => set({ isDemoMode: v }),
   setActiveDemand: (id) => set({ activeDemandId: id }),
@@ -162,6 +197,9 @@ export const useStore = create<AppState>()(persist((set) => ({
   partialize: (state) => ({
     demands: state.demands.filter(d => d.id !== DEMO_DEMAND.id),
     webhookUrl: state.webhookUrl,
+    theme: state.theme,
+    githubToken: state.githubToken,
+    githubRepo: state.githubRepo,
   }),
   // Migração: versões antigas salvavam DEMO_DEMAND corrompido — descarta e reinicia com fresco
   migrate: (_persisted: unknown, version: number) => {
@@ -170,14 +208,14 @@ export const useStore = create<AppState>()(persist((set) => ({
   },
   // Na reidratação: injeta DEMO_DEMAND fresco + demandas do usuário (sem DEMO_DEMAND antigo)
   merge: (persisted: unknown, current: AppState) => {
-    const p = persisted as { demands?: Demand[]; webhookUrl?: string }
+    const p = persisted as { demands?: Demand[]; webhookUrl?: string; theme?: 'dark' | 'light'; githubToken?: string; githubRepo?: string }
     return {
       ...current,
-      demands: [
-        DEMO_DEMAND,
-        ...(p.demands ?? []).filter(d => d.id !== DEMO_DEMAND.id),
-      ],
+      demands: [DEMO_DEMAND, ...(p.demands ?? []).filter(d => d.id !== DEMO_DEMAND.id)],
       webhookUrl: p.webhookUrl ?? '',
+      theme: p.theme ?? 'dark',
+      githubToken: p.githubToken ?? '',
+      githubRepo: p.githubRepo ?? '',
     }
   },
 }))

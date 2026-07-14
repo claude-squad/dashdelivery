@@ -26,7 +26,7 @@ const selectClass =
   'h-7 rounded-md border border-border bg-surface px-2 text-xs text-white/60 focus:outline-none focus:border-white/20 hover:border-white/20 transition-colors cursor-pointer appearance-none pr-6 bg-no-repeat'
 
 export function DemandListPanel() {
-  const { demands, setSelectedDemand } = useStore()
+  const { demands, setSelectedDemand, setActiveDemand } = useStore()
 
   const [search, setSearch]           = useState('')
   const [filterPriority, setFilterPriority] = useState('')
@@ -143,7 +143,7 @@ export function DemandListPanel() {
             return (
               <button
                 key={demand.id}
-                onClick={() => setSelectedDemand(demand.id)}
+                onClick={() => { setSelectedDemand(demand.id); setActiveDemand(demand.id) }}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface hover:bg-white/5 border border-transparent hover:border-border transition-all text-left group"
               >
                 <span className={clsx('w-2 h-2 rounded-full shrink-0', cfg.dot)} />

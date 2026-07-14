@@ -6,10 +6,10 @@ export default {
     extend: {
       colors: {
         surface: {
-          DEFAULT: '#0f1117',
-          1: '#161b26',
-          2: '#1c2233',
-          3: '#222840',
+          DEFAULT: 'var(--c-surface)',
+          1: 'var(--c-surface-1)',
+          2: 'var(--c-surface-2)',
+          3: 'var(--c-surface-3)',
         },
         accent: {
           DEFAULT: '#7c6cf0',
@@ -17,8 +17,8 @@ export default {
           dim: '#2d2660',
         },
         border: {
-          DEFAULT: 'rgba(255,255,255,0.07)',
-          bright: 'rgba(255,255,255,0.14)',
+          DEFAULT: 'var(--c-border)',
+          bright: 'var(--c-border-bright)',
         },
         status: {
           idle: '#4b5563',

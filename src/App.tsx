@@ -1,4 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect } from 'react'
+import { ApprovalGateModal } from '@/components/demand/ApprovalGateModal'
+import { PRPreviewModal } from '@/components/demand/PRPreviewModal'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { TopBar } from '@/components/layout/TopBar'
 import { PipelineSteps } from '@/components/pipeline/PipelineSteps'
@@ -29,7 +32,12 @@ export default function App() {
   useGateExecution()
   useDemandExecution()
 
-  const { selectedDemandId } = useStore()
+  const { selectedDemandId, theme, pendingApproval, pendingPR } = useStore()
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('light', theme === 'light')
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+  }, [theme])
 
   return (
     <div className="flex h-screen bg-surface overflow-hidden font-sans">
@@ -104,6 +112,8 @@ export default function App() {
       <GateExecutionBar />
       <AgentDrawer />
       <NewDemandModal />
+      {pendingApproval && <ApprovalGateModal />}
+      {pendingPR && <PRPreviewModal />}
     </div>
   )
 }

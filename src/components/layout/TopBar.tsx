@@ -2,6 +2,7 @@ import { Monitor, Bell, ChevronDown, PlusCircle } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useStore, useActiveDemand } from '@/store/useStore'
 import { SettingsButton } from '@/components/layout/SettingsPanel'
+import { ThemeToggle } from '@/components/layout/ThemeToggle'
 
 const PRIORITY_COLORS: Record<string, string> = {
   HIGH: 'text-red-400',
@@ -70,6 +71,7 @@ export function TopBar() {
           {isDemoMode && <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />}
         </button>
 
+        <ThemeToggle />
         <SettingsButton />
 
         <button className="relative w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-white/40 hover:text-white/70 transition-colors">

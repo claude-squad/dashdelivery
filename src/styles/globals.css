@@ -1,4 +1,38 @@
 @tailwind base;
+/* ── Theme CSS variables ─────────────────────────────────────── */
+:root {
+  --c-surface:       #0f1117;
+  --c-surface-1:     #161b26;
+  --c-surface-2:     #1c2233;
+  --c-surface-3:     #222840;
+  --c-border:        rgba(255,255,255,0.07);
+  --c-border-bright: rgba(255,255,255,0.14);
+}
+
+:root.light {
+  --c-surface:       #f0f2f7;
+  --c-surface-1:     #ffffff;
+  --c-surface-2:     #e8edf5;
+  --c-surface-3:     #dde3ed;
+  --c-border:        rgba(0,0,0,0.10);
+  --c-border-bright: rgba(0,0,0,0.18);
+}
+
+/* Light mode text overrides */
+:root.light body { color: #111827; }
+:root.light .text-white           { color: #111827 !important; }
+:root.light .text-white\/80       { color: rgba(17,24,39,0.8)  !important; }
+:root.light .text-white\/70       { color: rgba(17,24,39,0.7)  !important; }
+:root.light .text-white\/60       { color: rgba(17,24,39,0.6)  !important; }
+:root.light .text-white\/50       { color: rgba(17,24,39,0.5)  !important; }
+:root.light .text-white\/40       { color: rgba(17,24,39,0.4)  !important; }
+:root.light .text-white\/30       { color: rgba(17,24,39,0.3)  !important; }
+:root.light .text-white\/25       { color: rgba(17,24,39,0.25) !important; }
+:root.light .text-white\/20       { color: rgba(17,24,39,0.2)  !important; }
+:root.light .text-white\/15       { color: rgba(17,24,39,0.15) !important; }
+:root.light .text-white\/10       { color: rgba(17,24,39,0.1)  !important; }
+:root.light * { scrollbar-color: rgba(0,0,0,0.15) transparent; }
+:root.light *::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); }
 @tailwind components;
 @tailwind utilities;
 

@@ -4,9 +4,11 @@ import { Settings, X, Webhook, Check } from 'lucide-react'
 import { useStore } from '@/store/useStore'
 
 function SettingsPanel({ onClose }: { onClose: () => void }) {
-  const { webhookUrl, setWebhookUrl } = useStore()
+  const { webhookUrl, setWebhookUrl, githubToken, setGithubToken, githubRepo, setGithubRepo } = useStore()
   const [url, setUrl] = useState(webhookUrl)
   const [saved, setSaved] = useState(false)
+  const [ghToken, setGhToken] = useState(githubToken)
+  const [ghRepo, setGhRepo]   = useState(githubRepo)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 80) }, [])
@@ -20,6 +22,8 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
 
   function save() {
     setWebhookUrl(url.trim())
+    setGithubToken(ghToken.trim())
+    setGithubRepo(ghRepo.trim())
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -100,6 +104,41 @@ function SettingsPanel({ onClose }: { onClose: () => void }) {
                     Use este endpoint no n8n para enviar atualizações de status de volta ao dashboard.
                     Body: {'{ "demandId", "agentId", "status", "progress", "summary" }'}
                   </p>
+                </div>
+              </div>
+            </div>
+
+            {/* GitHub */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-[11px] font-bold text-white/30 uppercase tracking-wider">Integração GitHub (PR automático)</span>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className={labelClass}>Personal Access Token</label>
+                  <input
+                    type="password"
+                    value={ghToken}
+                    onChange={e => setGhToken(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') save() }}
+                    placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                    className={inputClass}
+                    autoComplete="off"
+                  />
+                  <p className="text-[10px] text-white/25 mt-1.5 leading-relaxed">
+                    Requer permissão <code className="bg-white/10 px-1 rounded">repo</code> para criar PRs. Salvo apenas localmente no browser.
+                  </p>
+                </div>
+                <div>
+                  <label className={labelClass}>Repositório</label>
+                  <input
+                    type="text"
+                    value={ghRepo}
+                    onChange={e => setGhRepo(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') save() }}
+                    placeholder="owner/repositorio"
+                    className={inputClass}
+                  />
                 </div>
               </div>
             </div>
