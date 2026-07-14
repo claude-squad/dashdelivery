@@ -13,6 +13,10 @@ interface AppState {
   selectedAgentId: string | null
   sidebarTab: 'overview' | 'demand' | 'monitor'
 
+  // Webhook configurável — persiste no localStorage
+  webhookUrl: string
+  setWebhookUrl: (url: string) => void
+
   // Nova Demanda Modal
   isNewDemandOpen: boolean
   openNewDemand: () => void
@@ -65,6 +69,9 @@ export const useStore = create<AppState>()(persist((set) => ({
   events: DEMO_DEMAND.events,
   selectedAgentId: null,
   sidebarTab: 'overview',
+
+  webhookUrl: '',
+  setWebhookUrl: (url) => set({ webhookUrl: url }),
 
   isNewDemandOpen: false,
   openNewDemand: () => set({ isNewDemandOpen: true }),
@@ -154,6 +161,7 @@ export const useStore = create<AppState>()(persist((set) => ({
   // DEMO_DEMAND nunca persiste — sempre carrega fresco de demo.ts
   partialize: (state) => ({
     demands: state.demands.filter(d => d.id !== DEMO_DEMAND.id),
+    webhookUrl: state.webhookUrl,
   }),
   // Migração: versões antigas salvavam DEMO_DEMAND corrompido — descarta e reinicia com fresco
   migrate: (_persisted: unknown, version: number) => {
@@ -161,13 +169,17 @@ export const useStore = create<AppState>()(persist((set) => ({
     return _persisted as { demands: Demand[] }
   },
   // Na reidratação: injeta DEMO_DEMAND fresco + demandas do usuário (sem DEMO_DEMAND antigo)
-  merge: (persisted: unknown, current: AppState) => ({
-    ...current,
-    demands: [
-      DEMO_DEMAND,
-      ...((persisted as { demands?: Demand[] }).demands ?? []).filter(d => d.id !== DEMO_DEMAND.id),
-    ],
-  }),
+  merge: (persisted: unknown, current: AppState) => {
+    const p = persisted as { demands?: Demand[]; webhookUrl?: string }
+    return {
+      ...current,
+      demands: [
+        DEMO_DEMAND,
+        ...(p.demands ?? []).filter(d => d.id !== DEMO_DEMAND.id),
+      ],
+      webhookUrl: p.webhookUrl ?? '',
+    }
+  },
 }))
 
 export const useActiveDemand = () => {

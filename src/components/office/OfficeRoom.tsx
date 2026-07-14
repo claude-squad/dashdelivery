@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { Text } from '@react-three/drei'
 import { STATIONS_3D } from './sceneConstants'
 
 const ROOM_W = 14
@@ -360,6 +361,40 @@ export const OfficeRoom = memo(function OfficeRoom() {
 
       {/* Whiteboard — north wall */}
       <Whiteboard x={0} z={-ROOM_D / 2 + 0.1} rotY={0} />
+
+      {/* BRQ corporate sign — mounted above whiteboard */}
+      <group position={[0, 1.08, -ROOM_D / 2 + 0.13]}>
+        {/* Backing panel — dark navy */}
+        <mesh castShadow>
+          <boxGeometry args={[2.2, 0.28, 0.022]} />
+          <meshStandardMaterial color="#0b1940" roughness={0.4} metalness={0.35} emissive="#0b1940" emissiveIntensity={0.18} />
+        </mesh>
+        {/* Top accent line */}
+        <mesh position={[0, 0.128, 0.012]}>
+          <boxGeometry args={[2.16, 0.007, 0.001]} />
+          <meshBasicMaterial color="#2563eb" />
+        </mesh>
+        {/* Bottom accent line */}
+        <mesh position={[0, -0.128, 0.012]}>
+          <boxGeometry args={[2.16, 0.007, 0.001]} />
+          <meshBasicMaterial color="#2563eb" />
+        </mesh>
+        {/* BRQ text */}
+        <Text position={[-0.52, 0.01, 0.014]} fontSize={0.165} color="#ffffff" anchorX="center" anchorY="middle" letterSpacing={0.05}>
+          BRQ
+        </Text>
+        {/* Vertical divider */}
+        <mesh position={[-0.08, 0, 0.013]}>
+          <boxGeometry args={[0.007, 0.18, 0.001]} />
+          <meshBasicMaterial color="#3b82f6" />
+        </mesh>
+        {/* Digital Solutions text */}
+        <Text position={[0.55, 0.01, 0.014]} fontSize={0.063} color="#93c5fd" anchorX="center" anchorY="middle" maxWidth={1.0} lineHeight={1.35}>
+          {'Digital\nSolutions'}
+        </Text>
+        {/* Subtle glow */}
+        <pointLight color="#4488ff" intensity={0.12} distance={1.5} decay={2} />
+      </group>
 
       {/* Bookshelves — west + east walls */}
       <Bookshelf x={-ROOM_W / 2 + 0.3} z={-0.5} />

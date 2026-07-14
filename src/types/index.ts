@@ -29,6 +29,8 @@ export type DemandStatus =
 
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
 
+export type DemandType = 'feature' | 'bug' | 'improvement' | 'research' | 'spike'
+
 export type WorkflowStageId =
   | 'intake'
   | 'triage'
@@ -134,6 +136,7 @@ export interface Demand {
   requestedBy: string
   createdAt: string
   updatedAt: string
+  type?: DemandType
   repository?: string
   branch?: string
   dueDate?: string

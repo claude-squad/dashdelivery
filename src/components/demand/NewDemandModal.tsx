@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { PlusCircle, X, Loader2, Upload, FileText } from 'lucide-react'
+import { PlusCircle, X, Loader2, Upload, FileText, Settings } from 'lucide-react'
 import { useStore } from '@/store/useStore'
-import type { Demand, Priority, QualityGate, AcceptanceCriterion, WorkflowStage } from '@/types'
+import type { Demand, Priority, DemandType, QualityGate, AcceptanceCriterion, WorkflowStage } from '@/types'
 
 const DEFAULT_GATES: QualityGate[] = [
   { id: 'qg-lint',     name: 'Lint',             status: 'pending', mandatory: true,  agentId: 'dev' },
@@ -45,7 +45,15 @@ const PRIORITY_OPTIONS: { value: Priority; label: string }[] = [
   { value: 'CRITICAL', label: 'Crítica' },
 ]
 
-function Toast({ message, onDone }: { message: string; onDone: () => void }) {
+const DEMAND_TYPE_OPTIONS: { value: DemandType; label: string }[] = [
+  { value: 'feature',     label: 'Feature'              },
+  { value: 'bug',         label: 'Bug / Correção'       },
+  { value: 'improvement', label: 'Melhoria'             },
+  { value: 'research',    label: 'Pesquisa / Discovery' },
+  { value: 'spike',       label: 'Spike Técnico'        },
+]
+
+function Toast({ message, type = 'success', onDone }: { message: string; type?: 'success' | 'error'; onDone: () => void }) {
   useEffect(() => {
     const t = setTimeout(onDone, 3000)
     return () => clearTimeout(t)
@@ -56,7 +64,11 @@ function Toast({ message, onDone }: { message: string; onDone: () => void }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 16 }}
-      className="fixed bottom-6 right-6 z-[200] bg-surface-2 border border-border rounded-xl px-4 py-3 text-sm font-medium text-white shadow-xl"
+      className={`fixed bottom-6 right-6 z-[200] border rounded-xl px-4 py-3 text-sm font-medium shadow-xl ${
+        type === 'error'
+          ? 'bg-red-950/90 border-red-800/60 text-red-200'
+          : 'bg-surface-2 border-border text-white'
+      }`}
     >
       {message}
     </motion.div>
@@ -64,19 +76,21 @@ function Toast({ message, onDone }: { message: string; onDone: () => void }) {
 }
 
 export function NewDemandModal() {
-  const { isNewDemandOpen, closeNewDemand, addDemand } = useStore()
+  const { isNewDemandOpen, closeNewDemand, addDemand, webhookUrl, setWebhookUrl } = useStore()
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState<Priority>('HIGH')
+  const [demandType, setDemandType] = useState<DemandType>('feature')
   const [requestedBy, setRequestedBy] = useState('')
   const [repository, setRepository] = useState('')
   const [branch, setBranch] = useState('')
   const [dueDate, setDueDate] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [toast, setToast] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [fileName, setFileName] = useState('')
   const [isDragging, setIsDragging] = useState(false)
+  const [showWebhookConfig, setShowWebhookConfig] = useState(false)
 
   const firstInputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -131,11 +145,13 @@ export function NewDemandModal() {
     setTitle('')
     setDescription('')
     setPriority('HIGH')
+    setDemandType('feature')
     setRequestedBy('')
     setRepository('')
     setBranch('')
     setDueDate('')
     setFileName('')
+    setShowWebhookConfig(false)
   }
 
   const handleClose = () => {
@@ -153,6 +169,7 @@ export function NewDemandModal() {
       id: demandId,
       title: title.trim(),
       description: description.trim(),
+      type: demandType,
       priority,
       status: 'DRAFT',
       requestedBy: requestedBy.trim() || 'PM',
@@ -178,27 +195,46 @@ export function NewDemandModal() {
           timestamp: now,
           demandId,
           summary: 'Demanda registrada e triagem automática concluída',
-          metadata: { priority, requestedBy: requestedBy.trim() || 'PM' },
+          metadata: { priority, type: demandType, requestedBy: requestedBy.trim() || 'PM' },
           correlationId: `corr-${Date.now()}`,
         },
       ],
     }
 
-    // Always add to local store immediately
+    // Always add to local store immediately — UI unblocked
     addDemand(demand)
 
-    // Fire-and-forget to server (no await — don't block UI)
-    fetch('http://localhost:3001/api/demands', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(demand),
-      signal: AbortSignal.timeout(4000),
-    }).catch(() => {/* server offline — local store already has it */})
+    const endpoint = webhookUrl.trim()
+    if (endpoint) {
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(demand),
+          signal: AbortSignal.timeout(8000),
+        })
+        if (res.ok) {
+          setToast({ message: 'Demanda criada e enviada ao webhook', type: 'success' })
+        } else {
+          setToast({ message: `Webhook retornou ${res.status} — demanda salva localmente`, type: 'error' })
+        }
+      } catch {
+        setToast({ message: 'Falha no webhook — demanda salva localmente', type: 'error' })
+      }
+    } else {
+      // Sem webhook configurado — tenta localhost silenciosamente
+      fetch('http://localhost:3001/api/demands', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(demand),
+        signal: AbortSignal.timeout(4000),
+      }).catch(() => {})
+      setToast({ message: 'Demanda criada com sucesso', type: 'success' })
+    }
 
     setIsLoading(false)
     resetForm()
     closeNewDemand()
-    setToast(true)
   }
 
   const inputClass =
@@ -315,8 +351,20 @@ export function NewDemandModal() {
                     />
                   </div>
 
-                  {/* Row: Prioridade + Solicitado por */}
+                  {/* Row: Tipo + Prioridade */}
                   <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={labelClass}>Tipo</label>
+                      <select
+                        value={demandType}
+                        onChange={(e) => setDemandType(e.target.value as DemandType)}
+                        className={inputClass}
+                      >
+                        {DEMAND_TYPE_OPTIONS.map((o) => (
+                          <option key={o.value} value={o.value}>{o.label}</option>
+                        ))}
+                      </select>
+                    </div>
                     <div>
                       <label className={labelClass}>Prioridade</label>
                       <select
@@ -325,12 +373,14 @@ export function NewDemandModal() {
                         className={inputClass}
                       >
                         {PRIORITY_OPTIONS.map((o) => (
-                          <option key={o.value} value={o.value}>
-                            {o.label}
-                          </option>
+                          <option key={o.value} value={o.value}>{o.label}</option>
                         ))}
                       </select>
                     </div>
+                  </div>
+
+                  {/* Row: Solicitado por + Prazo */}
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className={labelClass}>Solicitado por</label>
                       <input
@@ -338,6 +388,15 @@ export function NewDemandModal() {
                         value={requestedBy}
                         onChange={(e) => setRequestedBy(e.target.value)}
                         placeholder="Nome ou squad"
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Prazo</label>
+                      <input
+                        type="date"
+                        value={dueDate}
+                        onChange={(e) => setDueDate(e.target.value)}
                         className={inputClass}
                       />
                     </div>
@@ -367,15 +426,39 @@ export function NewDemandModal() {
                     </div>
                   </div>
 
-                  {/* Prazo */}
-                  <div className="max-w-xs">
-                    <label className={labelClass}>Prazo</label>
-                    <input
-                      type="date"
-                      value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
-                      className={inputClass}
-                    />
+                  {/* Webhook config — configuração de envio */}
+                  <div className="border-t border-border/50 pt-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowWebhookConfig((v) => !v)}
+                      className="flex items-center gap-1.5 text-[11px] text-white/30 hover:text-white/60 transition-colors select-none"
+                    >
+                      <Settings size={11} />
+                      Configuração de envio
+                      <span className="ml-0.5 text-[10px]">{showWebhookConfig ? '▲' : '▼'}</span>
+                      {webhookUrl && (
+                        <span className="ml-2 px-1.5 py-0.5 rounded bg-green-900/40 border border-green-700/40 text-green-400 text-[9px] font-mono">
+                          webhook ativo
+                        </span>
+                      )}
+                    </button>
+
+                    {showWebhookConfig && (
+                      <div className="mt-2.5 space-y-1.5">
+                        <label className={labelClass}>Webhook URL</label>
+                        <input
+                          type="url"
+                          value={webhookUrl}
+                          onChange={(e) => setWebhookUrl(e.target.value)}
+                          placeholder="https://n8n.seudominio.com/webhook/demanda"
+                          className={inputClass + ' font-mono text-xs'}
+                        />
+                        <p className="text-[10px] text-white/25 leading-relaxed">
+                          A demanda é enviada via POST JSON para este endpoint ao criar.
+                          Deixe vazio para armazenamento local apenas.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -405,7 +488,7 @@ export function NewDemandModal() {
       {/* Toast */}
       <AnimatePresence>
         {toast && (
-          <Toast key="toast" message="Demanda criada com sucesso" onDone={() => setToast(false)} />
+          <Toast key="toast" message={toast.message} type={toast.type} onDone={() => setToast(null)} />
         )}
       </AnimatePresence>
     </>
