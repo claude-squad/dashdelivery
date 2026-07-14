@@ -1,23 +1,18 @@
 import { Monitor, Bell, ChevronDown, PlusCircle } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useStore, useActiveDemand } from '@/store/useStore'
-import { SettingsButton } from '@/components/layout/SettingsPanel'
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 
-const PRIORITY_COLORS: Record<string, string> = {
-  HIGH: 'text-red-400',
-  CRITICAL: 'text-red-500',
-  MEDIUM: 'text-yellow-400',
-  LOW: 'text-green-400',
-}
-
 const STATUS_BADGE: Record<string, { label: string; color: string }> = {
-  EXECUTION: { label: 'EM ANDAMENTO', color: 'bg-accent/20 text-accent-light border-accent/30' },
-  TESTING: { label: 'EM TESTES', color: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' },
-  DONE: { label: 'CONCLUÍDO', color: 'bg-green-500/20 text-green-300 border-green-500/30' },
-  BLOCKED: { label: 'BLOQUEADO', color: 'bg-red-500/20 text-red-300 border-red-500/30' },
-  PLANNING: { label: 'PLANEJAMENTO', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30' },
-  DRAFT: { label: 'RASCUNHO', color: 'bg-white/10 text-white/50 border-white/10' },
+  EXECUTION: { label: 'EM ANDAMENTO', color: 'bg-[#00b894]/15 text-[#00d9a3] border-[#00b894]/30' },
+  TESTING:   { label: 'EM TESTES',    color: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30' },
+  DONE:      { label: 'CONCLUÍDO',    color: 'bg-green-500/15 text-green-300 border-green-500/30' },
+  BLOCKED:   { label: 'BLOQUEADO',    color: 'bg-red-500/15 text-red-300 border-red-500/30' },
+  PLANNING:  { label: 'PLANEJAMENTO', color: 'bg-blue-500/15 text-blue-300 border-blue-500/30' },
+  DRAFT:     { label: 'RASCUNHO',     color: 'bg-white/8 text-white/40 border-white/10' },
+  REVIEW:    { label: 'REVISÃO',      color: 'bg-amber-500/15 text-amber-300 border-amber-500/30' },
+  APPROVAL:  { label: 'APROVAÇÃO',    color: 'bg-purple-500/15 text-purple-300 border-purple-500/30' },
+  ANALYSIS:  { label: 'ANÁLISE',      color: 'bg-blue-500/15 text-blue-300 border-blue-500/30' },
 }
 
 export function TopBar() {
@@ -26,68 +21,63 @@ export function TopBar() {
   const badge = demand ? (STATUS_BADGE[demand.status] ?? STATUS_BADGE.DRAFT) : null
 
   return (
-    <header className="h-14 shrink-0 border-b border-border bg-surface-1 flex items-center px-5 gap-4">
-      {/* Title */}
+    <header className="h-[58px] shrink-0 border-b border-[--c-border] bg-[--c-surface-1] flex items-center px-6 gap-6">
+      {/* Left — Title + status */}
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <div>
-          <span className="text-sm font-semibold text-white">Dashboard da Demanda</span>
-          {demand && (
-            <span className="ml-2 text-xs text-white/30 font-mono">{demand.id}</span>
-          )}
+          <span className="text-[17px] font-bold text-white leading-none">Dashboard da Demanda</span>
         </div>
         {demand && badge && (
-          <span className={clsx('px-2.5 py-0.5 rounded-full text-[11px] font-semibold border', badge.color)}>
+          <span className={clsx('px-2 py-0.5 rounded text-[10px] font-bold tracking-wider border', badge.color)}>
             {badge.label}
           </span>
         )}
         {demand && (
-          <h1 className="text-sm font-medium text-white/80 truncate">{demand.title}</h1>
+          <span className="text-[11px] font-mono text-white/30">{demand.id}</span>
         )}
       </div>
 
-      {/* Actions */}
+      {/* Right — Actions */}
       <div className="flex items-center gap-2 shrink-0">
-        {/* Nova Demanda */}
         <button
           onClick={openNewDemand}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#7c6cf0] text-white hover:bg-[#6b5ce0] transition-all"
+          className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[12px] font-semibold bg-[#7c6cf0] text-white hover:bg-[#6b5ce0] transition-all shadow-sm shadow-[#7c6cf0]/25"
         >
           <PlusCircle size={13} />
           Nova Demanda
         </button>
 
-        {/* Demo mode toggle */}
         <button
           onClick={() => setDemoMode(!isDemoMode)}
           className={clsx(
-            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all',
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-all',
             isDemoMode
-              ? 'bg-accent/20 border-accent/40 text-accent-light'
-              : 'bg-surface-2 border-border text-white/50 hover:text-white/80'
+              ? 'bg-accent/15 border-accent/30 text-[#a89cf5]'
+              : 'bg-[--c-surface-2] border-[--c-border] text-white/40 hover:text-white/70'
           )}
         >
-          <Monitor size={13} />
+          <Monitor size={12} />
           Modo Apresentação
-          {isDemoMode && <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />}
+          <ChevronDown size={11} className="text-white/30" />
+          {isDemoMode && <span className="w-1.5 h-1.5 rounded-full bg-[#7c6cf0] animate-pulse" />}
         </button>
 
         <ThemeToggle />
-        <SettingsButton />
 
-        <button className="relative w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-white/40 hover:text-white/70 transition-colors">
-          <Bell size={15} />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-accent" />
+        <button className="relative w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-white/30 hover:text-white/60 transition-colors">
+          <Bell size={14} />
+          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#7c6cf0]" />
         </button>
 
-        <div className="flex items-center gap-2 pl-2 border-l border-border cursor-pointer hover:opacity-80 transition-opacity">
-          <div className="w-7 h-7 rounded-full bg-accent flex items-center justify-center text-[11px] font-bold text-white">
+        <div className="flex items-center gap-2 pl-2 border-l border-[--c-border] cursor-pointer hover:opacity-80 transition-opacity">
+          <div className="w-7 h-7 rounded-full bg-[#7c6cf0] flex items-center justify-center text-[10px] font-bold text-white">
             PM
           </div>
-          <div className="text-right">
-            <div className="text-[12px] font-medium text-white leading-none">Product Manager</div>
-            <div className="text-[10px] text-white/40 mt-0.5 leading-none">PM</div>
+          <div>
+            <div className="text-[12px] font-semibold text-white leading-tight">Product Manager</div>
+            <div className="text-[9px] text-white/30 leading-none">PM</div>
           </div>
-          <ChevronDown size={13} className="text-white/30" />
+          <ChevronDown size={11} className="text-white/25" />
         </div>
       </div>
     </header>

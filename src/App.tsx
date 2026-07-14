@@ -9,6 +9,8 @@ import { AgentOffice3D } from '@/components/office/AgentOffice3D'
 import { AgentList } from '@/components/agents/AgentList'
 import { ActivityStream } from '@/components/activity/ActivityStream'
 import { MetricsBar } from '@/components/metrics/MetricsBar'
+import { RealtimeMetrics } from '@/components/metrics/RealtimeMetrics'
+import { ProjectInfoCard } from '@/components/project/ProjectInfoCard'
 import {
   DemandSummaryCard,
   AcceptanceCriteriaCard,
@@ -104,28 +106,52 @@ export default function App() {
             ) : (
               <motion.div key="dashboard" className="flex-1 overflow-y-auto" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
                 <div className="p-4 space-y-3">
-                  <div className="grid grid-cols-4 gap-3">
-                    <DemandSummaryCard />
-                    <AcceptanceCriteriaCard />
-                    <PromptEngineerCard />
-                    <ExecutionPlanCard />
-                  </div>
-                  <div className="grid grid-cols-[220px_1fr_220px] gap-3">
-                    <div className="bg-surface-2 border border-border rounded-xl p-3 flex flex-col gap-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold tracking-widest text-white/30 uppercase">Agentes em Ação</span>
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-green-500/15 text-green-400 font-medium">Tempo Real</span>
-                      </div>
-                      <AgentList />
-                    </div>
-                    <AgentOffice3D />
-                    <div className="bg-surface-2 border border-border rounded-xl p-3 flex flex-col gap-2">
-                      <div className="text-[10px] font-bold tracking-widest text-white/30 uppercase">Atividades Recentes</div>
-                      <ActivityStream />
-                    </div>
-                  </div>
+                  {/* Row 1 — 5 metric cards */}
                   <MetricsBar />
-                  <DemandListPanel />
+
+                  {/* Row 2 — Agents | 3D Office | Activity */}
+                  <div className="grid grid-cols-[220px_1fr_220px] gap-3 min-h-0" style={{ height: '380px' }}>
+                    {/* Left: Agent list panel */}
+                    <div className="bg-[--c-surface-2] border border-[--c-border] rounded-xl flex flex-col overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-[--c-border]">
+                        <span className="text-[10px] font-bold tracking-widest text-white/40 uppercase">Agentes em Ação</span>
+                        <span className="text-[9px] px-2 py-0.5 rounded-full bg-green-500/12 text-green-400 font-semibold border border-green-500/20">Tempo Real</span>
+                      </div>
+                      <div className="flex-1 overflow-y-auto px-2 py-2">
+                        <AgentList />
+                      </div>
+                    </div>
+
+                    {/* Center: 3D office with header + controls */}
+                    <div className="bg-[--c-surface-2] border border-[--c-border] rounded-xl flex flex-col overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-2.5 border-b border-[--c-border] shrink-0">
+                        <span className="text-[10px] font-bold tracking-widest text-white/40 uppercase">Execução Simulada • Demo Mode</span>
+                        <button className="text-white/25 hover:text-white/50 transition-colors">
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        </button>
+                      </div>
+                      <div className="flex-1 min-h-0">
+                        <AgentOffice3D />
+                      </div>
+                    </div>
+
+                    {/* Right: Activity stream panel */}
+                    <div className="bg-[--c-surface-2] border border-[--c-border] rounded-xl flex flex-col overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-[--c-border]">
+                        <span className="text-[10px] font-bold tracking-widest text-white/40 uppercase">Atividades Recentes</span>
+                        <button className="text-[10px] text-[#7c6cf0] hover:text-[#9d91f5] font-medium transition-colors">Ver todas</button>
+                      </div>
+                      <div className="flex-1 overflow-y-auto px-3 py-2">
+                        <ActivityStream />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Row 3 — Realtime metrics | Project info */}
+                  <div className="grid grid-cols-[1fr_340px] gap-3">
+                    <RealtimeMetrics />
+                    <ProjectInfoCard />
+                  </div>
                 </div>
               </motion.div>
             )}
