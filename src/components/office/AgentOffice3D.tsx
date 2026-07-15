@@ -109,24 +109,27 @@ function ThreeJSOffice() {
   )
 }
 
-// If VITE_CLAW3D_URL is set (production), use it directly — no health check needed.
-// Otherwise check local Vite proxy to see if Claw3D is running on dev machine.
-const PROD_CLAW3D = import.meta.env.VITE_CLAW3D_URL ?? ''
+// Priority: local Claw3D (3010) > deployed Claw3D (env var) > Three.js fallback
+// Browsers allow http://127.0.0.1 from HTTPS pages (W3C "potentially trustworthy origin").
+const LOCAL_ORIGIN = 'http://127.0.0.1:3010'
+const PROD_CLAW3D  = import.meta.env.VITE_CLAW3D_URL ?? ''
 
-type Status = 'checking' | 'online' | 'offline'
+type Status = 'checking' | 'online-local' | 'online-prod' | 'offline'
 
 export function AgentOffice3D() {
-  const [status, setStatus] = useState<Status>(PROD_CLAW3D ? 'online' : 'checking')
-  const src = PROD_CLAW3D ? `${PROD_CLAW3D}/office` : '/claw3d/office'
+  const [status, setStatus] = useState<Status>('checking')
 
   useEffect(() => {
-    if (PROD_CLAW3D) return  // already marked online above
-    const timer = setTimeout(() => setStatus('offline'), 3000)
-    fetch('/claw3d/', { method: 'HEAD' })
-      .then(r => { clearTimeout(timer); setStatus(r.ok ? 'online' : 'offline') })
-      .catch(() => { clearTimeout(timer); setStatus('offline') })
+    const timer = setTimeout(() => setStatus(PROD_CLAW3D ? 'online-prod' : 'offline'), 3000)
+    fetch(`${LOCAL_ORIGIN}/`, { method: 'HEAD', mode: 'no-cors' })
+      .then(() => { clearTimeout(timer); setStatus('online-local') })
+      .catch(() => { clearTimeout(timer); setStatus(PROD_CLAW3D ? 'online-prod' : 'offline') })
     return () => clearTimeout(timer)
   }, [])
+
+  const src = status === 'online-local'
+    ? `${LOCAL_ORIGIN}/office`
+    : `${PROD_CLAW3D}/office`
 
   if (status === 'offline') return <ThreeJSOffice />
 
