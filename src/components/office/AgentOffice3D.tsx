@@ -109,12 +109,18 @@ function ThreeJSOffice() {
   )
 }
 
+// If VITE_CLAW3D_URL is set (production), use it directly — no health check needed.
+// Otherwise check local Vite proxy to see if Claw3D is running on dev machine.
+const PROD_CLAW3D = import.meta.env.VITE_CLAW3D_URL ?? ''
+
 type Status = 'checking' | 'online' | 'offline'
 
 export function AgentOffice3D() {
-  const [status, setStatus] = useState<Status>('checking')
+  const [status, setStatus] = useState<Status>(PROD_CLAW3D ? 'online' : 'checking')
+  const src = PROD_CLAW3D ? `${PROD_CLAW3D}/office` : '/claw3d/office'
 
   useEffect(() => {
+    if (PROD_CLAW3D) return  // already marked online above
     const timer = setTimeout(() => setStatus('offline'), 3000)
     fetch('/claw3d/', { method: 'HEAD' })
       .then(r => { clearTimeout(timer); setStatus(r.ok ? 'online' : 'offline') })
@@ -138,17 +144,15 @@ export function AgentOffice3D() {
     )
   }
 
-  // Claw3D is online — embed via iframe (same-origin through Vite proxy)
   return (
     <div className="relative w-full h-full min-h-[320px] rounded-xl overflow-hidden border border-border">
       <iframe
-        src="/claw3d/office"
+        src={src}
         title="Escritório Virtual — Claw3D"
         className="w-full h-full border-0"
         style={{ background: '#1a1a2e' }}
         allow="fullscreen"
       />
-      {/* Offline-reconnect pill (visible on top of iframe for UX) */}
       <div
         style={{
           position: 'absolute', bottom: 8, right: 10, zIndex: 10,
