@@ -110,7 +110,7 @@ export default function App() {
                   <MetricsBar />
 
                   {/* Row 2 — Agents | 3D Office | Activity */}
-                  <div className="grid grid-cols-[220px_1fr_220px] gap-3 min-h-0" style={{ height: '380px' }}>
+                  <div className="grid grid-cols-[160px_1fr_220px] gap-3 min-h-0" style={{ height: '380px' }}>
                     {/* Left: Agent list panel */}
                     <div className="bg-[--c-surface-2] border border-[--c-border] rounded-xl flex flex-col overflow-hidden">
                       <div className="flex items-center justify-between px-4 py-3 border-b border-[--c-border]">
