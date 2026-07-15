@@ -117,7 +117,7 @@ export function AgentOffice3D() {
   useEffect(() => {
     const timer = setTimeout(() => setStatus('offline'), 3000)
     fetch('/claw3d/', { method: 'HEAD' })
-      .then(() => { clearTimeout(timer); setStatus('online') })
+      .then(r => { clearTimeout(timer); setStatus(r.ok ? 'online' : 'offline') })
       .catch(() => { clearTimeout(timer); setStatus('offline') })
     return () => clearTimeout(timer)
   }, [])
