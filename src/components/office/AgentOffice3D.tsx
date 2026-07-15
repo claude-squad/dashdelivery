@@ -112,7 +112,7 @@ function ThreeJSOffice() {
 // Priority: local Claw3D (3010) > deployed Claw3D (env var) > Three.js fallback
 // Browsers allow http://127.0.0.1 from HTTPS pages (W3C "potentially trustworthy origin").
 const LOCAL_ORIGIN = 'http://127.0.0.1:3010'
-const PROD_CLAW3D  = import.meta.env.VITE_CLAW3D_URL ?? ''
+const PROD_CLAW3D  = import.meta.env.VITE_CLAW3D_URL || 'https://claw3d-source.vercel.app'
 
 type Status = 'checking' | 'online-local' | 'online-prod' | 'offline'
 
