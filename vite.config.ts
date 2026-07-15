@@ -17,6 +17,16 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:3001',
       '/socket.io': { target: 'http://localhost:3001', ws: true },
+      '/claw3d': {
+        target: 'http://127.0.0.1:3010',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/claw3d/, ''),
+      },
+      '/claw3d-adapter': {
+        target: 'http://127.0.0.1:18790',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/claw3d-adapter/, ''),
+      },
     },
   },
 })

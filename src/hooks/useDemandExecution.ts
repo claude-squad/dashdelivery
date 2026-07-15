@@ -138,6 +138,14 @@ function pickBugs(seed: string, count = 2): string[] {
   return Array.from({ length: count }, (_, i) => SYNTHETIC_BUGS[(start + i) % SYNTHETIC_BUGS.length])
 }
 
+function fireAdapter(payload: Record<string, string>): void {
+  fetch('/claw3d-adapter/hook', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(payload),
+  }).catch(() => { /* Claw3D adapter optional — silent fail */ })
+}
+
 export function useDemandExecution() {
   const { demands } = useStore()
   const processedIds = useRef(new Set<string>())
@@ -154,6 +162,8 @@ export function useDemandExecution() {
         let evIdx      = 0
 
         const st  = () => useStore.getState()
+        const agentRole = (agentId: string): string =>
+          st().agentDefinitions.find(d => d.id === agentId)?.role ?? agentId.toUpperCase()
         const now = () => new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
         const ev  = (eventType: string, agentId: string, summary: string): DomainEvent => ({
           id:            `ev-${demandId}-${evIdx++}`,
@@ -178,6 +188,10 @@ export function useDemandExecution() {
             taskComplete: false,
           })
         })
+        // Register all agents in Claw3D for the meeting
+        Object.keys(MEETING_POSITIONS).forEach(agentId => {
+          fireAdapter({ hook_event_name: 'SubagentStart', session_id: `dashdelivery-${demandId}`, agent_id: `dd-meet-${agentId}-${demandId}`, agent_type: agentRole(agentId) })
+        })
         st().updateDemand(demandId, { status: 'ANALYSIS' as const, progress: 5 })
         st().pushEvent(ev('demand.started', 'pm', `Nova demanda recebida: ${title}`))
 
@@ -186,6 +200,10 @@ export function useDemandExecution() {
         // All return to stations
         Object.keys(MEETING_POSITIONS).forEach(agentId => {
           st().updateAgentInstance(agentId, { status: 'IDLE', currentTask: '', walkTarget: null })
+        })
+        // Remove meeting agents from Claw3D
+        Object.keys(MEETING_POSITIONS).forEach(agentId => {
+          fireAdapter({ hook_event_name: 'SubagentStop', session_id: `dashdelivery-${demandId}`, agent_id: `dd-meet-${agentId}-${demandId}` })
         })
 
         await sleep(RETURN_DELAY)
@@ -202,6 +220,7 @@ export function useDemandExecution() {
           })
           st().updateDemand(demandId, { progress: phase.progress })
           st().pushEvent(ev('agent.task_started', phase.agentId, phase.eventSummaryFn(title)))
+          fireAdapter({ hook_event_name: 'SubagentStart', session_id: `dashdelivery-${demandId}`, agent_id: `dd-${phase.agentId}-${demandId}`, agent_type: agentRole(phase.agentId) })
 
           // Schedule mid-cycle status changes (fire-and-forget, no await)
           if (phase.midCycles) {
@@ -244,7 +263,9 @@ export function useDemandExecution() {
                 walkTarget:  null,
                 taskComplete: false,
               })
+              fireAdapter({ hook_event_name: 'SubagentStart', session_id: `dashdelivery-${demandId}`, agent_id: `dd-dev-fix-${demandId}`, agent_type: agentRole('dev') })
               await sleep(8000)
+              fireAdapter({ hook_event_name: 'SubagentStop', session_id: `dashdelivery-${demandId}`, agent_id: `dd-dev-fix-${demandId}` })
 
               st().updateAgentInstance('dev', { taskComplete: true })
               await sleep(DONE_FLASH_MS)
@@ -269,6 +290,7 @@ export function useDemandExecution() {
           // Task complete flash
           st().updateAgentInstance(phase.agentId, { taskComplete: true })
           await sleep(DONE_FLASH_MS)
+          fireAdapter({ hook_event_name: 'SubagentStop', session_id: `dashdelivery-${demandId}`, agent_id: `dd-${phase.agentId}-${demandId}` })
 
           // Handoff walk to next agent desk
           if (phase.nextAgentId) {

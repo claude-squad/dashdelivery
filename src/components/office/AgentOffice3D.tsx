@@ -1,4 +1,4 @@
-import { Suspense, useRef } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { useStore } from '@/store/useStore'
@@ -17,9 +17,7 @@ const webGLAvailable = (() => {
 function SceneLighting() {
   return (
     <>
-      {/* Ambient — warm office tone */}
       <ambientLight color="#c8a870" intensity={0.55} />
-      {/* Main sun — cool daylight */}
       <directionalLight
         position={[8, 14, 6]}
         color="#f0f4ff"
@@ -34,23 +32,22 @@ function SceneLighting() {
         shadow-camera-near={0.1}
         shadow-camera-far={40}
       />
-      {/* Fill light — soft from opposite side */}
       <directionalLight position={[-5, 6, -4]} color="#4060a0" intensity={0.35} />
     </>
   )
 }
 
-export function AgentOffice3D() {
+// Three.js fallback — original office scene
+function ThreeJSOffice() {
   const { agentInstances, agentDefinitions, setSelectedAgent, isDemoMode } = useStore()
 
   if (!webGLAvailable) return <AgentOffice />
 
   return (
     <div
-      className="relative w-full h-full min-h-[420px] rounded-xl border border-border"
+      className="relative w-full h-full min-h-[320px] rounded-xl border border-border"
       style={{ background: '#1a1a2e' }}
     >
-      {/* Demo mode overlay */}
       {isDemoMode && (
         <div style={{
           position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)',
@@ -65,8 +62,6 @@ export function AgentOffice3D() {
           DEMO MODE — EXECUÇÃO SIMULADA
         </div>
       )}
-
-      {/* Orbit hint */}
       <div style={{
         position: 'absolute', bottom: 8, right: 10, zIndex: 10,
         fontSize: 9, color: 'rgba(255,255,255,0.25)',
@@ -74,38 +69,28 @@ export function AgentOffice3D() {
       }}>
         drag · scroll · right-click
       </div>
-
       <Canvas
-        camera={{
-          fov: 46,
-          position: [3, 18, 12],
-          near: 0.1,
-          far: 80,
-        }}
+        camera={{ fov: 46, position: [3, 18, 12], near: 0.1, far: 80 }}
         shadows
         gl={{ antialias: true, alpha: false }}
         style={{ width: '100%', height: '100%', borderRadius: 'inherit', display: 'block' }}
       >
         <SceneLighting />
-
         <OrbitControls
           target={[0, 0, 0.5]}
           minDistance={4}
           maxDistance={32}
           maxPolarAngle={Math.PI / 2.1}
-          enablePan={true}
+          enablePan
           dampingFactor={0.08}
           enableDamping
         />
-
         <Suspense fallback={null}>
           <OfficeRoom />
-
           {agentDefinitions.map((def) => {
             const instance = agentInstances[def.id]
             const station  = STATIONS_3D[def.id]
             if (!instance || !station) return null
-
             return (
               <ClawAgent
                 key={def.id}
@@ -120,6 +105,59 @@ export function AgentOffice3D() {
           })}
         </Suspense>
       </Canvas>
+    </div>
+  )
+}
+
+type Status = 'checking' | 'online' | 'offline'
+
+export function AgentOffice3D() {
+  const [status, setStatus] = useState<Status>('checking')
+
+  useEffect(() => {
+    const timer = setTimeout(() => setStatus('offline'), 3000)
+    fetch('/claw3d/', { method: 'HEAD' })
+      .then(() => { clearTimeout(timer); setStatus('online') })
+      .catch(() => { clearTimeout(timer); setStatus('offline') })
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (status === 'offline') return <ThreeJSOffice />
+
+  if (status === 'checking') {
+    return (
+      <div
+        className="w-full h-full min-h-[320px] flex items-center justify-center rounded-xl border border-border"
+        style={{ background: '#1a1a2e' }}
+      >
+        <div className="text-center space-y-2">
+          <div className="w-8 h-8 border-2 border-[#7c6cf0]/40 border-t-[#7c6cf0] rounded-full animate-spin mx-auto" />
+          <div className="text-[11px] text-white/30">Conectando ao Escritório Virtual...</div>
+        </div>
+      </div>
+    )
+  }
+
+  // Claw3D is online — embed via iframe (same-origin through Vite proxy)
+  return (
+    <div className="relative w-full h-full min-h-[320px] rounded-xl overflow-hidden border border-border">
+      <iframe
+        src="/claw3d/office"
+        title="Escritório Virtual — Claw3D"
+        className="w-full h-full border-0"
+        style={{ background: '#1a1a2e' }}
+        allow="fullscreen"
+      />
+      {/* Offline-reconnect pill (visible on top of iframe for UX) */}
+      <div
+        style={{
+          position: 'absolute', bottom: 8, right: 10, zIndex: 10,
+          fontSize: 9, color: 'rgba(255,255,255,0.25)',
+          pointerEvents: 'none', userSelect: 'none',
+        }}
+      >
+        Escritório Virtual · Claw3D
+      </div>
     </div>
   )
 }
