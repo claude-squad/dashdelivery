@@ -105,24 +105,23 @@ export default function App() {
               </motion.div>
             ) : (
               <motion.div key="dashboard" className="flex-1 min-h-0 flex flex-col overflow-hidden" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
-                {/* Metrics strip — full width */}
-                <div className="px-4 pt-4 shrink-0">
-                  <MetricsBar />
-                </div>
+                {/* Two-column body — office fills full height on the right */}
+                <div className="flex-1 min-h-0 grid grid-cols-[2fr_3fr] gap-3 p-4 overflow-hidden">
 
-                {/* Two-column body */}
-                <div className="flex-1 min-h-0 grid grid-cols-[2fr_3fr] gap-3 p-4 pt-3 overflow-hidden">
-
-                  {/* LEFT — Gestão da Demanda */}
-                  <div className="flex flex-col gap-3 min-h-0 overflow-hidden">
-                    <div className="flex items-center gap-2 shrink-0">
+                  {/* LEFT — Gestão da Demanda (scrollable column) */}
+                  <div className="flex flex-col gap-3 overflow-y-auto min-h-0 pr-1">
+                    <div className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#7c6cf0] shrink-0" />
                       <span className="text-[9px] font-bold tracking-widest text-white/35 uppercase">Gestão da Demanda</span>
                     </div>
-                    <div className="shrink-0"><ProjectInfoCard /></div>
-                    <div className="shrink-0"><RealtimeMetrics /></div>
-                    <div className="flex-1 min-h-0 bg-[--c-surface-2] border border-[--c-border] rounded-xl flex flex-col overflow-hidden">
-                      <div className="flex items-center justify-between px-4 py-3 border-b border-[--c-border] shrink-0">
+                    {/* MetricsBar reflow: 2 columns, last card full-width */}
+                    <div className="[&>div]:!grid-cols-2 [&>div>*:last-child]:!col-span-2">
+                      <MetricsBar />
+                    </div>
+                    <ProjectInfoCard />
+                    <RealtimeMetrics />
+                    <div className="bg-[--c-surface-2] border border-[--c-border] rounded-xl flex flex-col overflow-hidden min-h-[160px]">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-[--c-border]">
                         <span className="text-[10px] font-bold tracking-widest text-white/40 uppercase">Atividades Recentes</span>
                         <button className="text-[10px] text-[#7c6cf0] hover:text-[#9d91f5] font-medium transition-colors">Ver todas</button>
                       </div>
@@ -132,9 +131,9 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* RIGHT — Escritório Virtual */}
+                  {/* RIGHT — Escritório Virtual (full height, no strip above) */}
                   <div className="flex flex-col gap-3 min-h-0 overflow-hidden">
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0" />
                       <span className="text-[9px] font-bold tracking-widest text-white/35 uppercase">Escritório Virtual</span>
                     </div>
