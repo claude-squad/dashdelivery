@@ -97,9 +97,14 @@ export default function App() {
             ) : (
               <motion.div key="dashboard" className="flex-1 min-h-0 flex flex-col overflow-hidden" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
                 {/* Two-column body */}
-                <div className="flex-1 min-h-0 grid grid-cols-[2fr_3fr] gap-3 p-4 overflow-hidden">
+                <div className="flex-1 min-h-0 grid grid-cols-[3fr_2fr] gap-3 p-4 overflow-hidden">
 
-                  {/* LEFT — Escritório Virtual (sozinho, altura total) */}
+                  {/* LEFT — Central de Operações da Squad */}
+                  <div className="flex flex-col min-h-0 overflow-hidden">
+                    <OperationCenter />
+                  </div>
+
+                  {/* RIGHT — Escritório Virtual (sozinho, altura total) */}
                   <div className="flex flex-col gap-2 min-h-0 overflow-hidden">
                     <div className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0" />
@@ -108,11 +113,6 @@ export default function App() {
                     <div className="flex-1 min-h-0">
                       <AgentOffice3D />
                     </div>
-                  </div>
-
-                  {/* RIGHT — Central de Operações da Squad */}
-                  <div className="flex flex-col min-h-0 overflow-hidden">
-                    <OperationCenter />
                   </div>
 
                 </div>
