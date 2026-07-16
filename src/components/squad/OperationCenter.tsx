@@ -9,6 +9,7 @@ import { ValidateForm } from './ValidateForm'
 import { ExecutionStepper } from './ExecutionStepper'
 import { HumanApprovalModal } from './HumanApprovalModal'
 import { DeliverablesPanel } from './DeliverablesPanel'
+import { useSyncSquadToOffice } from '@/hooks/useSyncSquadToOffice'
 import type { OperationType } from '@/types/squad'
 
 const TABS = [
@@ -56,6 +57,7 @@ export function OperationCenter() {
   } = useSquadStore()
 
   const [showLogs, setShowLogs] = useState(false)
+  useSyncSquadToOffice()
   const logsRef = useRef<HTMLDivElement>(null)
 
   // auto-scroll logs
@@ -183,7 +185,7 @@ export function OperationCenter() {
             ) : selectedType === 'execute' ? (
               <ExecuteForm
                 onBack={clearType}
-                onSubmit={data => startExecution(data, githubToken, githubRepo)}
+                onSubmit={(data, _files) => startExecution(data, githubToken, githubRepo)}
                 githubRepo={githubRepo}
               />
             ) : (
