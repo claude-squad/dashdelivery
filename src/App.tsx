@@ -8,8 +8,6 @@ import { AgentOffice3D } from '@/components/office/AgentOffice3D'
 import { AgentList } from '@/components/agents/AgentList'
 import { ActivityStream } from '@/components/activity/ActivityStream'
 import { MetricsBar } from '@/components/metrics/MetricsBar'
-import { RealtimeMetrics } from '@/components/metrics/RealtimeMetrics'
-import { ProjectInfoCard } from '@/components/project/ProjectInfoCard'
 import { DemandListPanel } from '@/components/demand/DemandListPanel'
 import { AgentDrawer } from '@/components/agents/AgentDrawer'
 import { NewDemandModal } from '@/components/demand/NewDemandModal'
@@ -101,25 +99,14 @@ export default function App() {
                 {/* Two-column body */}
                 <div className="flex-1 min-h-0 grid grid-cols-[2fr_3fr] gap-3 p-4 overflow-hidden">
 
-                  {/* LEFT — Gestão da Demanda (scrollable) */}
-                  <div className="flex flex-col gap-3 overflow-y-auto min-h-0 pr-1">
+                  {/* LEFT — Escritório Virtual (sozinho, altura total) */}
+                  <div className="flex flex-col gap-2 min-h-0 overflow-hidden">
                     <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#7c6cf0] shrink-0" />
-                      <span className="text-[9px] font-bold tracking-widest text-white/35 uppercase">Gestão da Demanda</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0" />
+                      <span className="text-[9px] font-bold tracking-widest text-white/35 uppercase">Escritório Virtual</span>
                     </div>
-                    <div className="[&>div]:!grid-cols-2 [&>div>*:last-child]:!col-span-2">
-                      <MetricsBar />
-                    </div>
-                    <ProjectInfoCard />
-                    <RealtimeMetrics />
-                    <div className="bg-[--c-surface-2] border border-[--c-border] rounded-xl flex flex-col overflow-hidden min-h-[160px]">
-                      <div className="flex items-center justify-between px-4 py-3 border-b border-[--c-border]">
-                        <span className="text-[10px] font-bold tracking-widest text-white/40 uppercase">Atividades Recentes</span>
-                        <button className="text-[10px] text-[#7c6cf0] hover:text-[#9d91f5] font-medium transition-colors">Ver todas</button>
-                      </div>
-                      <div className="flex-1 overflow-y-auto px-3 py-2">
-                        <ActivityStream />
-                      </div>
+                    <div className="flex-1 min-h-0">
+                      <AgentOffice3D />
                     </div>
                   </div>
 

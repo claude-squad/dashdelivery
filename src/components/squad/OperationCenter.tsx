@@ -9,7 +9,6 @@ import { ValidateForm } from './ValidateForm'
 import { ExecutionStepper } from './ExecutionStepper'
 import { HumanApprovalModal } from './HumanApprovalModal'
 import { DeliverablesPanel } from './DeliverablesPanel'
-import { AgentOffice3D } from '@/components/office/AgentOffice3D'
 import type { OperationType } from '@/types/squad'
 
 const TABS = [
@@ -75,8 +74,6 @@ export function OperationCenter() {
   const hasExecution = !!execution
 
   // Claw3D height: bigger in execucao tab
-  const officeH = activeTab === 'execucao' ? 'h-52' : 'h-32'
-
   return (
     <div className="flex flex-col h-full min-h-0 bg-[--c-surface-2] border border-[--c-border] rounded-xl overflow-hidden">
 
@@ -132,11 +129,6 @@ export function OperationCenter() {
             <Terminal size={12} />
           </button>
         </div>
-      </div>
-
-      {/* ── Mini Claw3D — always visible (Option B) ─────────────── */}
-      <div className={`shrink-0 ${officeH} border-b border-border/40 transition-all duration-300`}>
-        <AgentOffice3D compact />
       </div>
 
       {/* ── Tabs ─────────────────────────────────────────────────── */}
