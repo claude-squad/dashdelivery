@@ -4,24 +4,18 @@ import { ApprovalGateModal } from '@/components/demand/ApprovalGateModal'
 import { PRPreviewModal } from '@/components/demand/PRPreviewModal'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { TopBar } from '@/components/layout/TopBar'
-import { PipelineSteps } from '@/components/pipeline/PipelineSteps'
 import { AgentOffice3D } from '@/components/office/AgentOffice3D'
 import { AgentList } from '@/components/agents/AgentList'
 import { ActivityStream } from '@/components/activity/ActivityStream'
 import { MetricsBar } from '@/components/metrics/MetricsBar'
 import { RealtimeMetrics } from '@/components/metrics/RealtimeMetrics'
 import { ProjectInfoCard } from '@/components/project/ProjectInfoCard'
-import {
-  DemandSummaryCard,
-  AcceptanceCriteriaCard,
-  PromptEngineerCard,
-  ExecutionPlanCard,
-} from '@/components/demand/DemandCards'
 import { DemandListPanel } from '@/components/demand/DemandListPanel'
 import { AgentDrawer } from '@/components/agents/AgentDrawer'
 import { NewDemandModal } from '@/components/demand/NewDemandModal'
 import { DemandDetail } from '@/components/demand/DemandDetail'
 import { GateExecutionBar } from '@/components/gates/GateExecutionBar'
+import { OperationCenter } from '@/components/squad/OperationCenter'
 import { useDemoTick } from '@/hooks/useDemoTick'
 import { useSocket } from '@/hooks/useSocket'
 import { useGateExecution } from '@/hooks/useGateExecution'
@@ -49,9 +43,8 @@ export default function App() {
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar />
-        <PipelineSteps />
 
-        {/* ── Main content — switches based on sidebar nav ─────────────── */}
+        {/* ── Main content ─────────────────────────────────────────── */}
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
           <AnimatePresence mode="wait">
             {selectedDemandId ? (
@@ -105,16 +98,15 @@ export default function App() {
               </motion.div>
             ) : (
               <motion.div key="dashboard" className="flex-1 min-h-0 flex flex-col overflow-hidden" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
-                {/* Two-column body — office fills full height on the right */}
+                {/* Two-column body */}
                 <div className="flex-1 min-h-0 grid grid-cols-[2fr_3fr] gap-3 p-4 overflow-hidden">
 
-                  {/* LEFT — Gestão da Demanda (scrollable column) */}
+                  {/* LEFT — Gestão da Demanda (scrollable) */}
                   <div className="flex flex-col gap-3 overflow-y-auto min-h-0 pr-1">
                     <div className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#7c6cf0] shrink-0" />
                       <span className="text-[9px] font-bold tracking-widest text-white/35 uppercase">Gestão da Demanda</span>
                     </div>
-                    {/* MetricsBar reflow: 2 columns, last card full-width */}
                     <div className="[&>div]:!grid-cols-2 [&>div>*:last-child]:!col-span-2">
                       <MetricsBar />
                     </div>
@@ -131,15 +123,9 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* RIGHT — Escritório Virtual (full height, no strip above) */}
-                  <div className="flex flex-col gap-3 min-h-0 overflow-hidden">
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0" />
-                      <span className="text-[9px] font-bold tracking-widest text-white/35 uppercase">Escritório Virtual</span>
-                    </div>
-                    <div className="flex-1 min-h-0">
-                      <AgentOffice3D />
-                    </div>
+                  {/* RIGHT — Central de Operações da Squad */}
+                  <div className="flex flex-col min-h-0 overflow-hidden">
+                    <OperationCenter />
                   </div>
 
                 </div>

@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { useStore } from '@/store/useStore'
@@ -37,18 +37,17 @@ function SceneLighting() {
   )
 }
 
-// Three.js fallback — original office scene
-function ThreeJSOffice() {
+function ThreeJSOffice({ compact = false }: { compact?: boolean }) {
   const { agentInstances, agentDefinitions, setSelectedAgent, isDemoMode } = useStore()
 
   if (!webGLAvailable) return <AgentOffice />
 
   return (
     <div
-      className="relative w-full h-full min-h-[320px] rounded-xl border border-border"
+      className={`relative w-full h-full rounded-xl border border-border ${compact ? 'min-h-[120px]' : 'min-h-[320px]'}`}
       style={{ background: '#1a1a2e' }}
     >
-      {isDemoMode && (
+      {isDemoMode && !compact && (
         <div style={{
           position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)',
           zIndex: 20, padding: '2px 10px',
@@ -62,13 +61,15 @@ function ThreeJSOffice() {
           DEMO MODE — EXECUÇÃO SIMULADA
         </div>
       )}
-      <div style={{
-        position: 'absolute', bottom: 8, right: 10, zIndex: 10,
-        fontSize: 9, color: 'rgba(255,255,255,0.25)',
-        pointerEvents: 'none', userSelect: 'none',
-      }}>
-        drag · scroll · right-click
-      </div>
+      {!compact && (
+        <div style={{
+          position: 'absolute', bottom: 8, right: 10, zIndex: 10,
+          fontSize: 9, color: 'rgba(255,255,255,0.25)',
+          pointerEvents: 'none', userSelect: 'none',
+        }}>
+          drag · scroll · right-click
+        </div>
+      )}
       <Canvas
         camera={{ fov: 46, position: [3, 18, 12], near: 0.1, far: 80 }}
         shadows
@@ -110,13 +111,12 @@ function ThreeJSOffice() {
 }
 
 // Priority: local Claw3D (3010) > deployed Claw3D (env var) > Three.js fallback
-// Browsers allow http://127.0.0.1 from HTTPS pages (W3C "potentially trustworthy origin").
 const LOCAL_ORIGIN = 'http://127.0.0.1:3010'
 const PROD_CLAW3D  = import.meta.env.VITE_CLAW3D_URL || 'https://claw3d-source.vercel.app'
 
 type Status = 'checking' | 'online-local' | 'online-prod' | 'offline'
 
-export function AgentOffice3D() {
+export function AgentOffice3D({ compact = false }: { compact?: boolean }) {
   const [status, setStatus] = useState<Status>('checking')
 
   useEffect(() => {
@@ -131,24 +131,26 @@ export function AgentOffice3D() {
     ? `${LOCAL_ORIGIN}/office`
     : `${PROD_CLAW3D}/office`
 
-  if (status === 'offline') return <ThreeJSOffice />
+  if (status === 'offline') return <ThreeJSOffice compact={compact} />
+
+  const minH = compact ? 'min-h-[120px]' : 'min-h-[320px]'
 
   if (status === 'checking') {
     return (
       <div
-        className="w-full h-full min-h-[320px] flex items-center justify-center rounded-xl border border-border"
+        className={`w-full h-full ${minH} flex items-center justify-center rounded-xl border border-border`}
         style={{ background: '#1a1a2e' }}
       >
         <div className="text-center space-y-2">
-          <div className="w-8 h-8 border-2 border-[#7c6cf0]/40 border-t-[#7c6cf0] rounded-full animate-spin mx-auto" />
-          <div className="text-[11px] text-white/30">Conectando ao Escritório Virtual...</div>
+          <div className="w-6 h-6 border-2 border-[#7c6cf0]/40 border-t-[#7c6cf0] rounded-full animate-spin mx-auto" />
+          {!compact && <div className="text-[11px] text-white/30">Conectando ao Escritório Virtual...</div>}
         </div>
       </div>
     )
   }
 
   return (
-    <div className="relative w-full h-full min-h-[320px] rounded-xl overflow-hidden border border-border">
+    <div className={`relative w-full h-full ${minH} rounded-xl overflow-hidden border border-border`}>
       <iframe
         src={src}
         title="Escritório Virtual — Claw3D"
@@ -156,15 +158,17 @@ export function AgentOffice3D() {
         style={{ background: '#1a1a2e' }}
         allow="fullscreen"
       />
-      <div
-        style={{
-          position: 'absolute', bottom: 8, right: 10, zIndex: 10,
-          fontSize: 9, color: 'rgba(255,255,255,0.25)',
-          pointerEvents: 'none', userSelect: 'none',
-        }}
-      >
-        Escritório Virtual · Claw3D
-      </div>
+      {!compact && (
+        <div
+          style={{
+            position: 'absolute', bottom: 8, right: 10, zIndex: 10,
+            fontSize: 9, color: 'rgba(255,255,255,0.25)',
+            pointerEvents: 'none', userSelect: 'none',
+          }}
+        >
+          Escritório Virtual · Claw3D
+        </div>
+      )}
     </div>
   )
 }
