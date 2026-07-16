@@ -97,7 +97,7 @@ export default function App() {
             ) : (
               <motion.div key="dashboard" className="flex-1 min-h-0 flex flex-col overflow-hidden" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
                 {/* Two-column body */}
-                <div className="flex-1 min-h-0 grid grid-cols-[3fr_2fr] gap-3 p-4 overflow-hidden">
+                <div className="flex-1 min-h-0 grid grid-cols-[2fr_3fr] gap-3 p-4 overflow-hidden">
 
                   {/* LEFT — Central de Operações da Squad */}
                   <div className="flex flex-col min-h-0 overflow-hidden">
